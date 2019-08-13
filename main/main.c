@@ -12,7 +12,8 @@ static const char TAG[] = "OpenLUX";
 // Where on the file system we are storing web data
 static const char WEB[] = "/web";
 // This determines the size of the HTTP chunks the ESP is sending
-static const long CHUNK_SIZE = 4096;
+// This can be tweaked for better large-file performance
+static const long CHUNK_SIZE = 24576; // 24KiB
 
 // Declare the functions we'll be defining later. I might move these functions
 // into other files at some point in the future.
@@ -20,7 +21,7 @@ static void attempt(esp_err_t, char[]);
 static void die_slowly(void); // ;-;
 static void wifi_start(char[], char[]);
 static void mount_webdata();
-static char* read_file(char[]);
+static void send_file_as_chunks(httpd_req_t*, char[]);
 static esp_err_t static_get(httpd_req_t*);
 static httpd_handle_t start_webserver(void);
 static void on_disconnect(void*, esp_event_base_t, int32_t, void*);
@@ -44,31 +45,49 @@ static char* malloc_null_str() {
   return str;
 }
 
-static char* read_file(char fn[]) {
+static void send_file_as_chunks(httpd_req_t* req, char fn[]) {
   FILE* fp = fopen(fn, "r");
   if (!fp) {
     ESP_LOGE(TAG, "Failed to open %s", fn);
-    return malloc_null_str();
+    return;
   }
-  struct stat s;
-  fstat(fileno(fp), &s);
-  ESP_LOGI(TAG, "Loaded %ld bytes from %s", s.st_size, fn);
-  // Here be ghosts... (No idea why +1 sometimes crashes it)
-  char* str = malloc(s.st_size + 2);
-  if (!str) {
-    ESP_LOGE(TAG, "Failed to allocate %ld bytes on the heap", s.st_size + 2);
-    return malloc_null_str();
-  } 
-  fread(str, 1, s.st_size, fp);
-  str[s.st_size + 1] = '\0';
+  // Would it be better if I did this on the stack?
+  char* msg = malloc(CHUNK_SIZE);
+  if (!msg) {
+    ESP_LOGE(TAG, "Failed to allocate %ld bytes on the heap", CHUNK_SIZE);
+    return;
+  }
+  long bytes;
+  do {
+    bytes = fread(msg, 1, CHUNK_SIZE, fp);
+    ESP_LOGI(TAG, "Sending %ld bytes from %s...", bytes, fn); // Might nix this
+    attempt(httpd_resp_send_chunk(req, msg, bytes), "Failed to send HTTP response");
+  } while (bytes > 0);
+  free(msg);
   fclose(fp);
-  return str;
+}
+
+//Filepath function here
+//Mime function here
+
+static char* file_to_mime(char fn[]) {
+  if (strstr(fn, ".html")) {
+    return "text/html";
+  } else if (strstr(fn, ".css")) {
+    return "text/css";
+  } else if (strstr(fn, ".js")) {
+    return "application/javascript";
+  } else if (strstr(fn, ".png")) {
+    return "image/png";
+  } else {
+    return "application/octet-stream";
+  }
 }
 
 // Comment me!
 static esp_err_t static_get(httpd_req_t* req) {
-  // Allloc buffer here Send ref to read_file. Set global chunk size. Return
-  // real size as long.  Actually, get rid of read_file and load the file
+  // Allloc buffer here Send ref to send_file_as_chunks. Set global chunk size. Return
+  // real size as long.  Actually, get rid of send_file_as_chunks and load the file
   // here. Use httpd_resp_send_chunk To gradually send data until we reach the
   // end of the file (EOF). Also write a uri to mime type so setting headers
   // with httpd_resp_send. Do a while (fread). It returns the bytes read.
@@ -76,20 +95,14 @@ static esp_err_t static_get(httpd_req_t* req) {
   char* path_ptr = (char*) &path;
   strcpy(path_ptr, WEB);
   strcat(path_ptr, req->uri);
-  /*if (path[strlen(WEB) + strlen(req->uri) - 1] == '/') {
-    strcat(path_ptr, "index.html");
-    }*/
   if (!strchr(path, '.')) {
     if (path[strlen(WEB) + strlen(req->uri) - 1] != '/') {
       strcat(path_ptr, "/");
     }
     strcat(path_ptr, "index.html");
   }
-  ESP_LOGW(TAG, "Path: %s", path);
-  ESP_LOGW(TAG, "End: %c", path[strlen(WEB) + strlen(req->uri) - 1]);
-  char* msg = read_file(path);
-  attempt(httpd_resp_send(req, msg, strlen(msg) - 1), "Failed to send HTTP response");
-  free(msg);
+  attempt(httpd_resp_set_type(req, file_to_mime(path)), "Failed to set response type");
+  send_file_as_chunks(req, path);
   return ESP_OK;
 }
 
