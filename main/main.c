@@ -4,6 +4,8 @@
 #include <nvs_flash.h>
 #include <esp_wifi.h>
 #include <esp_log.h>
+// Don't keep this here
+#include <driver/adc.h>
 
 // Name of our application
 static const char TAG[] = "OpenLUX";
@@ -51,6 +53,15 @@ void app_main(void) {
 
   // This kicks off the server!
   start_webserver();
+
+  // !!! Start Dirty Chunk !!!
+  adc1_config_width(ADC_WIDTH_BIT_12);
+  adc1_config_channel_atten(ADC_CHANNEL_0, ADC_ATTEN_DB_0);
+  while (true) {
+    ESP_LOGI(TAG, "Light reading: %d", adc1_get_raw(ADC1_CHANNEL_0));
+    vTaskDelay(200 / portTICK_PERIOD_MS);
+  }
+  // !!! End Dirty Chunk!!!
 }
 
 // The static means this function can only be used from inside this file
