@@ -1,0 +1,61 @@
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="/assets/resources/orbit-logo.png">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro">
+    <link rel="stylesheet" href="/assets/styles/theme.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bacon.js/0.3.15/Bacon.min.js">
+    </script>
+    <img id="HEIM" src="/assets/resources/heimdallr.png" alt="Heimdallr" style="display: none;">
+    <img id="POL" src="/assets/resources/earth.png" alt="Planet O' Life" style="display: none;">
+    <img id="LICH" src="/assets/resources/lich.png" alt="Lich" style="display: none;">
+    <img id="SOL" src="/assets/resources/sol.png" alt="Sol" style="display: none;">
+    <script src="/assets/scripts/animate.js"></script>
+    <title>Heimdallr</title>
+</head>
+
+<body>
+    <header>
+        <nav id="navbar">
+            <div id="nav-block">
+                <a href="/">
+                    <img src="/assets/resources/orbit-logo.png">
+                    <p>HEIMDALLR</p>
+                </a>
+                <div class="v-divider"></div>
+                <a href="/calculations/">
+                    <p>CALCULATIONS</p>
+                </a>
+                <div class="v-divider"></div>
+                <a href="/simulation/">
+                    <p class="page-selected">SIMULATION</p>
+                </a>
+            </div>
+        </nav>
+    </header>
+    <canvas id="screen"></canvas>
+    <div id="content">
+        <div class="controls">
+            <p id="tutor">Mouse Wheel to zoom. Middle click to pan. Orbit view shows planet and star (objects not to scale). Hover over an object for info. Concentric view is a to scale view of the celestial objects. Zoom in center to see Lich.</p>
+            <button id="reset">Reset</button>
+            <button id="pause">Pause</button>
+            <button id="trail">Trails</button>
+            <button id="orbit">Orbit</button>
+            <p id="scale"></p>
+            <p>m/px</p>
+            <button id="slower">Slower</button>
+            <p id="speed"></p>
+            <p>x</p>
+            <button id="faster">Faster</button>
+            <p id="objectInfo"></p>
+        </div>
+    </div>
+    <script src="/assets/scripts/util.js"></script>
+    <script src="/assets/scripts/phys.js"></script>
+    <script src="/assets/scripts/main.js"></script>
+</body>
+
+</html>
