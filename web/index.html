@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
-
   <head>
+    <meta charset="utf-8">
     <link rel="icon" type="image/png" href="icon.png">
-    <link rel="stylesheet" href="/theme.css">
+    <link rel="stylesheet" href="theme.css">
+    <script src="app.js"></script>
     <title>OpenLUX Console</title>
   </head>
   
@@ -11,5 +12,13 @@
     <img src="svg/bulb+text.svg">
     <h1>OpenLUX Console</h1>
     <p id="data-display">NO DATA</p>
+    <button type="button" onclick="recordData()">RECORD</button>
+    <div id="plate-holder">
+      <div id="plate">
+        <div id="col-labs"></div>
+        <div id="row-labs"></div>
+        <div id="wells"> </div>
+      </div>
+    </div>
   </body>
 </html>

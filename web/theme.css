@@ -1,3 +1,58 @@
 body {
     background-color: grey;
 }
+
+#plate-holder {
+    display: inline-block;
+}
+
+#plate {
+    display: grid;
+    grid-template-columns: 1.5rem repeat(12, 3rem) 1.5rem;
+    grid-template-rows: 1.5rem repeat(8, 3rem) 1.5rem;
+    grid-gap: 0.5rem;
+    background-color: #444;
+    padding: 2rem;
+}
+
+#row-labs {
+    grid-area: 2 / 1 / span 8 / span 1;
+    display: grid;
+    grid-auto-rows: 3rem;
+    grid-gap: 0.5rem;
+}
+
+#col-labs {
+    grid-area: 1 / 2 / span 1 / span 12;
+    display: grid;
+    grid-template-columns: repeat(12, 3rem);
+    grid-gap: 0.5rem;
+}
+
+#col-labs > p {
+    display: inline-block;
+    margin-top: 0;
+}
+
+#wells {
+    grid-area: 2 / 2 / span 8 / span 12;
+    display: grid;
+    grid-template-columns: repeat(12, 3rem);
+    grid-auto-rows: 3rem;
+    grid-gap: 0.5rem;
+}
+
+.well {
+    background-color: #226;
+    border-radius: 50%;
+    margin: 0;
+}
+
+.well > p {
+    display: none;
+}
+
+#plate > * > p, #plate > * > * > p {
+    color: #CCC;
+    text-align: center;
+}

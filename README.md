@@ -3,9 +3,9 @@
 An open source, affordable microplate reader for everyone.
 
 ## TODO
-* Split code into components
-* Oversample and average sensor (user sets sample rate and averages everything
-  between each update)
 * Better error handling
-* Use the Request API to display sensor data in the browser
-* window.localStorage for data storage
+* Pick char* or char[]
+* Add a way to stop sensor polling
+* Export to CSV
+* Add motor subsystem
+* Move to position on web well click
