@@ -1,5 +1,6 @@
 #include "openlux/sensors.h"
 #include "openlux/common.h"
+#include "openlux/motors.h"
 #include "openlux/web.h"
 #include <esp_spiffs.h>
 #include <nvs_flash.h>
@@ -38,6 +39,12 @@ void app_main(void) {
   // the first analogue channel (ADC1_CHANNEL_0), the range of the channel is
   // set to 0-1.1V (ADC_ATTEN_DB_0), and the sampling period is 200ms.
   start_sensor_polling(ADC1_CHANNEL_0, ADC_ATTEN_DB_0, 200);
+  
+  // !!! DIRTY CHUNK !!!
+  setup_motor_driver();
+  drive_motors(UPPER_MOTORS, -4096, 50);
+  drive_motors(LOWER_MOTORS, 4096, 50);
+  // !!! DIRTY CHUNK !!!
 }
 
 // The static means this function can only be used from inside this file

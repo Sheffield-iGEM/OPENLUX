@@ -1,6 +1,7 @@
 idf_component_register(SRCS "main.c"
                             "openlux/web.c"
                             "openlux/common.c"
+                            "openlux/motors.c"
                             "openlux/sensors.c"
                             INCLUDE_DIRS "openlux")
 
