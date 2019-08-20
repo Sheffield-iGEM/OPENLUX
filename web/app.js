@@ -7,6 +7,13 @@ document.addEventListener('DOMContentLoaded', _ => {
 var recording = false;
 var startTime = Date.now();
 
+// Take a well name String at some point
+function gotoWell(row, col) {
+    console.log('Go! (' + row + ',' + col + ')'); 
+    req = new Request('/goto', {method: 'POST', body: row + ',' + col});
+    fetch(req).catch(_ => console.log("Shit hit the fan..."));
+}
+
 function recordData() {
     recording = !recording;
     if (recording) {
@@ -61,11 +68,12 @@ function buildPlate(rows, cols) {
             well.appendChild(wellp);
             well.classList.add('well');
             well.id = name;
-            (function (name) {
+            (function (r,c) {
                 well.addEventListener('click', function () {
-                    console.log(name);
+                    console.log(r + ',' + c);
+                    gotoWell(r,c);
                 });
-            })(name);
+            })(r,c);
             plate.appendChild(well);
         }
     }

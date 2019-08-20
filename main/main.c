@@ -42,8 +42,7 @@ void app_main(void) {
   
   // !!! DIRTY CHUNK !!!
   setup_motor_driver();
-  drive_motors(UPPER_MOTORS, -4096, 50);
-  drive_motors(LOWER_MOTORS, 4096, 50);
+  home_motors();
   // !!! DIRTY CHUNK !!!
 }
 

@@ -1,4 +1,5 @@
 #include "sensors.h"
+#include "motors.h"
 #include "common.h"
 #include "web.h"
 
@@ -9,6 +10,7 @@ static const long CHUNK_SIZE = 24576; // 24KiB
 // Declare some static functions we'll be defining later.
 // URI handlers:
 static esp_err_t sensor_get(httpd_req_t*);
+static esp_err_t goto_post(httpd_req_t*);
 static esp_err_t static_get(httpd_req_t*);
 // Helper functions:
 static char* file_to_mime(char[]);
@@ -22,6 +24,13 @@ httpd_uri_t sensor_get_uri = {
   .method   = HTTP_GET, // We are sending data from the server
   .handler  = sensor_get, // Assign the sensor_get function to this uri
   .user_ctx = NULL // No extra data needed
+};
+
+httpd_uri_t goto_post_uri = {
+  .uri      = "/goto",
+  .method   = HTTP_POST,
+  .handler  = goto_post,
+  .user_ctx = NULL
 };
 
 // URI for handling all remaining GET requests
@@ -45,6 +54,18 @@ static esp_err_t sensor_get(httpd_req_t* req) {
   // Send the value back in an HTTP response, handling failure
   die_politely(httpd_resp_send(req, msg, strlen(msg)), "Failed to send HTTP response");
   // Return ESP_OK so the connection isn't killed
+  return ESP_OK;
+}
+
+static esp_err_t goto_post(httpd_req_t* req) {
+  // Handle error
+  char well[req->content_len + 1];
+  httpd_req_recv(req, well, req->content_len);
+  well[sizeof(well) - 1] = '\0';
+  int row = atoi(strtok(well, ","));
+  int col = atoi(strtok(NULL, ","));
+  goto_coord(row,col);
+  httpd_resp_send(req, "", 0);
   return ESP_OK;
 }
 
@@ -80,6 +101,7 @@ httpd_handle_t start_webserver(void) {
   if (httpd_start(&server, &config) == ESP_OK) {
     // Set URI handlers here
     httpd_register_uri_handler(server, &sensor_get_uri);
+    httpd_register_uri_handler(server, &goto_post_uri);
     httpd_register_uri_handler(server, &static_get_uri);
     return server;
   }
