@@ -6,6 +6,11 @@ An open source, affordable microplate reader for everyone.
 * Better error handling
 * Pick char* or char[]
 * Add a way to stop sensor polling
-* Export to CSV
 * Add graphing
 * Add well selection
+* Arrow keys to home
+* Send status to website
+* Add homing to web interface
+* Store homing on flash
+* Power on / off LED
+* Motor daemon (can't stay in web handlers long

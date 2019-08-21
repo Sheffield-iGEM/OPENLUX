@@ -38,11 +38,13 @@ void app_main(void) {
   // This function call starts polling the light sensor (which is connected to
   // the first analogue channel (ADC1_CHANNEL_0), the range of the channel is
   // set to 0-1.1V (ADC_ATTEN_DB_0), and the sampling period is 200ms.
-  start_sensor_polling(ADC1_CHANNEL_0, ADC_ATTEN_DB_0, 200);
+  start_sensor_polling(ADC1_CHANNEL_0, ADC_ATTEN_DB_0, 500);
   
   // !!! DIRTY CHUNK !!!
   setup_motor_driver();
+  ESP_LOGI(TAG, "Initialised!");
   home_motors();
+  goto_coord(3, 12);
   // !!! DIRTY CHUNK !!!
 }
 

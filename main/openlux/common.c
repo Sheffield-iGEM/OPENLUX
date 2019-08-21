@@ -4,6 +4,8 @@
 const char* TAG = "OpenLUX";
 // Where on the file system we are storing web data
 const char* WEB = "/web";
+// Current status of the machine
+status_t DEVICE_STATUS = INITIALISING;
 
 // This function does not return a value
 // This function takes the result of an action (esp_err_t) and checks whether

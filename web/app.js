@@ -1,10 +1,12 @@
 // Wait for the page to load before requesting sensor values
 document.addEventListener('DOMContentLoaded', _ => {
     updateReading();
+    resetData();
     buildPlate(8, 12);
 });
 
 var recording = false;
+var activeWell = '';
 var startTime = Date.now();
 
 // Take a well name String at some point
@@ -14,13 +16,55 @@ function gotoWell(row, col) {
     fetch(req).catch(_ => console.log("Shit hit the fan..."));
 }
 
+function resetData() {
+    startTime = Date.now();
+    localStorage.clear();
+    changeActive('A1');
+}
+
+function changeActive(well) {
+    activeWell = well;
+    var wells = JSON.parse(localStorage.getItem('Wells'));
+    if (wells == null) {
+        wells = [];
+    }
+    console.log(wells);
+    console.log(activeWell);
+    if (!wells.includes(activeWell)) {
+        wells.push(activeWell)
+        localStorage.setItem('Wells', JSON.stringify(wells));
+        localStorage.setItem(activeWell, JSON.stringify([]));
+    }
+}
+
 function recordData() {
     recording = !recording;
-    if (recording) {
-        startTime = Date.now()
-        localStorage.clear();
-        localStorage.setItem('A1', JSON.stringify([]));
-    }
+}
+
+function downloadData() {
+    var link = document.createElement('a');
+    link.download = 'plate_readings.csv';
+    var blob = new Blob([exportCSV()], {type: 'text/csv'});
+    link.href = window.URL.createObjectURL(blob);
+    link.click();
+}
+
+function exportCSV() {
+    var wells = JSON.parse(localStorage.getItem('Wells'));
+    var data = wells.map((well) => JSON.parse(localStorage.getItem(well)));
+    var capRow = (row) => row.slice(-row.length + 1) + '\n';
+    console.log(wells);
+    var csv = wells.reduce((acc, val) => acc + ',' + 'T' + val + ',' + val, '');
+    csv = capRow(csv);
+    var row = null;
+    do {
+        rowData = data.map((arr) => arr.shift());
+        console.log(rowData);
+        row = rowData.reduce((acc, obj) =>
+            (obj == null) ? acc + ',,' : acc + ',' + obj.time + ',' + obj.val, '');
+        csv += capRow(row);
+    } while (rowData.some((x) => x != null));
+    return csv;
 }
 
 function updateReading() {
@@ -30,17 +74,17 @@ function updateReading() {
         response.text().then(txt => {
             dataDisplay.textContent = txt;
             if (recording) {
-                var data = JSON.parse(localStorage.getItem('A1'));
+                var data = JSON.parse(localStorage.getItem(activeWell));
                 console.log(data);
                 data.push({
-                    time: Date.now() - startTime,
+                    time: (Date.now() - startTime) / 1000,
                     val: Number(txt)
                 });
-                localStorage.setItem('A1', JSON.stringify(data));
+                localStorage.setItem(activeWell, JSON.stringify(data));
             }
         })
     });
-    window.setTimeout(updateReading, 200);
+    window.setTimeout(updateReading, 1000);
 }
 
 function buildPlate(rows, cols) {
@@ -68,12 +112,13 @@ function buildPlate(rows, cols) {
             well.appendChild(wellp);
             well.classList.add('well');
             well.id = name;
-            (function (r,c) {
+            (function (r,c,name) {
                 well.addEventListener('click', function () {
-                    console.log(r + ',' + c);
+                    console.log(name);
+                    changeActive(name);
                     gotoWell(r,c);
                 });
-            })(r,c);
+            })(r,c,name);
             plate.appendChild(well);
         }
     }

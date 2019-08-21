@@ -10,6 +10,7 @@ static const long CHUNK_SIZE = 24576; // 24KiB
 // Declare some static functions we'll be defining later.
 // URI handlers:
 static esp_err_t sensor_get(httpd_req_t*);
+static esp_err_t status_get(httpd_req_t*);
 static esp_err_t goto_post(httpd_req_t*);
 static esp_err_t static_get(httpd_req_t*);
 // Helper functions:
@@ -24,6 +25,13 @@ httpd_uri_t sensor_get_uri = {
   .method   = HTTP_GET, // We are sending data from the server
   .handler  = sensor_get, // Assign the sensor_get function to this uri
   .user_ctx = NULL // No extra data needed
+};
+
+httpd_uri_t status_get_uri = {
+  .uri      = "/status",
+  .method   = HTTP_GET,
+  .handler  = status_get,
+  .user_ctx = NULL
 };
 
 httpd_uri_t goto_post_uri = {
@@ -45,10 +53,23 @@ httpd_uri_t static_get_uri = {
 // latest available sensor reading. It takes a pointer to the request (so that
 // it can respond to it) and returns ESP_OK if all goes well.
 static esp_err_t sensor_get(httpd_req_t* req) {
-  // Create a string large enough to hold any sensor value (0-4095)
-  char msg[4];
+  // Create a string large enough to hold any sensor value (0-4095) plus null terminator
+  char msg[5];
   // Read the latest sensor value and print it to msg
   sprintf(msg, "%d", get_sensor_value());
+  // Our text isn't HTML, so just set the response type to text/plain
+  die_politely(httpd_resp_set_type(req, "text/plain"), "Failed to set response type");
+  // Send the value back in an HTTP response, handling failure
+  die_politely(httpd_resp_send(req, msg, strlen(msg)), "Failed to send HTTP response");
+  // Return ESP_OK so the connection isn't killed
+  return ESP_OK;
+}
+
+// This feels redundant...
+static esp_err_t status_get(httpd_req_t* req) {
+  char msg[2];
+  sprintf(msg, "%d", DEVICE_STATUS);
+  ESP_LOGI(TAG, "Status asked...");
   // Our text isn't HTML, so just set the response type to text/plain
   die_politely(httpd_resp_set_type(req, "text/plain"), "Failed to set response type");
   // Send the value back in an HTTP response, handling failure
@@ -101,6 +122,7 @@ httpd_handle_t start_webserver(void) {
   if (httpd_start(&server, &config) == ESP_OK) {
     // Set URI handlers here
     httpd_register_uri_handler(server, &sensor_get_uri);
+    httpd_register_uri_handler(server, &status_get_uri);
     httpd_register_uri_handler(server, &goto_post_uri);
     httpd_register_uri_handler(server, &static_get_uri);
     return server;

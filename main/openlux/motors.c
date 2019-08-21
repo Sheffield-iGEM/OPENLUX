@@ -1,8 +1,8 @@
 #include "motors.h"
 
 static const gpio_num_t DATA = GPIO_NUM_18;
-static const gpio_num_t CLK = GPIO_NUM_19;
-static const gpio_num_t LATCH = GPIO_NUM_21;
+static const gpio_num_t CLK = GPIO_NUM_21;
+static const gpio_num_t LATCH = GPIO_NUM_19;
 
 static const int STEP_PERIOD = 3;
 static const int WELL_SPACING = 460;
@@ -13,26 +13,35 @@ static int R_POS = 0;
 static int C_POS = 0;
 
 void home_motors() {
+  DEVICE_STATUS = HOMING;
+  ESP_LOGI(TAG, "Device is homing...");
+  ESP_LOGI(TAG, "Row");
   drive_motors(LOWER_MOTORS, -4000, 2);
+  ESP_LOGI(TAG, "Column");
   drive_motors(UPPER_MOTORS, -6000, 2);
-  drive_motors(LOWER_MOTORS, R_OFFSET, 2);
-  drive_motors(UPPER_MOTORS, C_OFFSET, 2);
+  drive_motors(LOWER_MOTORS, R_OFFSET, STEP_PERIOD);
+  drive_motors(UPPER_MOTORS, C_OFFSET, STEP_PERIOD);
+  shift_byte(0x00);
+  ESP_LOGI(TAG, "Homed!");
+  DEVICE_STATUS = READY;
   R_POS = 0;
   C_POS = 0;
-  ESP_LOGI(TAG, "Homed!");
-  shift_byte(0x00);
 }
 
 void goto_coord(int row, int col) {
-  ESP_LOGI(TAG, "Goto row %d, column %d", row, col);
+  DEVICE_STATUS = MOVING;
+  ESP_LOGI(TAG, "Moving to row %d and column %d...", row, col);
   int r_steps = (row - 1) * WELL_SPACING - R_POS;
   int c_steps = (col - 1) * WELL_SPACING - C_POS;
+  ESP_LOGI(TAG, "Row");
   drive_motors(LOWER_MOTORS, r_steps, STEP_PERIOD);
+  ESP_LOGI(TAG, "Column");
   drive_motors(UPPER_MOTORS, c_steps, STEP_PERIOD);
+  shift_byte(0x00);
+  ESP_LOGI(TAG, "Done moving!");
+  DEVICE_STATUS = READY;
   R_POS += r_steps;
   C_POS += c_steps;
-  ESP_LOGI(TAG, "Done moving!");
-  shift_byte(0x00);
 }
 
 void setup_motor_driver() {

@@ -9,15 +9,22 @@
   </head>
   
   <body>
-    <img src="svg/bulb+text.svg">
-    <h1>OpenLUX Console</h1>
+    <img src="svg/text.svg">
     <p id="data-display">NO DATA</p>
-    <button type="button" onclick="recordData()">RECORD</button>
-    <div id="plate-holder">
-      <div id="plate">
-        <div id="col-labs"></div>
-        <div id="row-labs"></div>
-        <div id="wells"> </div>
+    <div id="user-interface">
+      <div id="plate-holder">
+        <div id="plate">
+          <div id="col-labs"></div>
+          <div id="row-labs"></div>
+          <div id="wells"> </div>
+        </div>
+      </div>
+      <div id="control-panel">
+        <div id="button-ui">
+          <button type="button" onclick="resetData()">CLEAR</button>
+          <button type="button" onclick="recordData()">RECORD</button>
+          <button type="button" onclick="downloadData()">DOWNLOAD</button>
+        </div>
       </div>
     </div>
   </body>
