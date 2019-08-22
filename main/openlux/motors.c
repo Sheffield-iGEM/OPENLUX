@@ -9,6 +9,8 @@ static const int WELL_SPACING = 460;
 static const int R_OFFSET = 250;
 static const int C_OFFSET = 260;
 
+static int R_TAR = R_OFFSET;
+static int C_TAR = C_OFFSET;
 static int R_POS = 0;
 static int C_POS = 0;
 
@@ -19,8 +21,8 @@ void home_motors() {
   drive_motors(LOWER_MOTORS, -4000, 2);
   ESP_LOGI(TAG, "Column");
   drive_motors(UPPER_MOTORS, -6000, 2);
-  drive_motors(LOWER_MOTORS, R_OFFSET, STEP_PERIOD);
-  drive_motors(UPPER_MOTORS, C_OFFSET, STEP_PERIOD);
+  // drive_motors(LOWER_MOTORS, R_OFFSET, STEP_PERIOD);
+  // drive_motors(UPPER_MOTORS, C_OFFSET, STEP_PERIOD);
   shift_byte(0x00);
   ESP_LOGI(TAG, "Homed!");
   DEVICE_STATUS = READY;
@@ -28,20 +30,31 @@ void home_motors() {
   C_POS = 0;
 }
 
+// Make these args meaningful and kill the global vars
+void goto_loop(void* args) {
+  while (true) {
+    int r_err = R_TAR - R_POS;
+    int c_err = C_TAR - C_POS;
+    if (r_err) {
+      drive_motors(LOWER_MOTORS, r_err, STEP_PERIOD);
+      R_POS += r_err;
+    } else if (c_err) {
+      drive_motors(UPPER_MOTORS, c_err, STEP_PERIOD);
+      C_POS += c_err;
+    } else if (DEVICE_STATUS == MOVING) {
+      ESP_LOGI(TAG, "Done moving!");
+      DEVICE_STATUS = READY;
+      shift_byte(0x00);
+    }
+    vTaskDelay(5); // Find a meaningful number to put here
+  }
+}
+
 void goto_coord(int row, int col) {
-  DEVICE_STATUS = MOVING;
   ESP_LOGI(TAG, "Moving to row %d and column %d...", row, col);
-  int r_steps = (row - 1) * WELL_SPACING - R_POS;
-  int c_steps = (col - 1) * WELL_SPACING - C_POS;
-  ESP_LOGI(TAG, "Row");
-  drive_motors(LOWER_MOTORS, r_steps, STEP_PERIOD);
-  ESP_LOGI(TAG, "Column");
-  drive_motors(UPPER_MOTORS, c_steps, STEP_PERIOD);
-  shift_byte(0x00);
-  ESP_LOGI(TAG, "Done moving!");
-  DEVICE_STATUS = READY;
-  R_POS += r_steps;
-  C_POS += c_steps;
+  R_TAR = (row - 1) * WELL_SPACING;
+  C_TAR = (col - 1) * WELL_SPACING;
+  DEVICE_STATUS = MOVING;
 }
 
 void setup_motor_driver() {
@@ -53,7 +66,13 @@ void setup_motor_driver() {
   gpio_set_direction(CLK, GPIO_MODE_OUTPUT);
   gpio_set_direction(LATCH, GPIO_MODE_OUTPUT);
 }
-  
+
+// This should be combined with another function...
+void start_goto_loop() {
+  TaskHandle_t goto_handle = NULL;
+  xTaskCreate(goto_loop, "MOTOR_MOVEMENT", 4096, NULL, 3, &goto_handle);
+}
+
 void shift_byte(char byte) {
   gpio_set_level(LATCH, 0);
   for (int n = 0; n < 8; n++) {

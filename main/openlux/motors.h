@@ -12,4 +12,5 @@ extern void drive_motors(motor_set_t, int, int);
 extern void shift_byte(char);
 extern void goto_coord(int,int);
 extern void home_motors();
+extern void start_goto_loop();
 #endif

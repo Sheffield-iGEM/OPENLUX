@@ -44,7 +44,7 @@ void app_main(void) {
   setup_motor_driver();
   ESP_LOGI(TAG, "Initialised!");
   home_motors();
-  goto_coord(3, 12);
+  start_goto_loop();
   // !!! DIRTY CHUNK !!!
 }
 
