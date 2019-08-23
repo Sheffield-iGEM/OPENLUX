@@ -13,11 +13,11 @@ long ways behind. Things will be cleaned up and commented in September.
 * Add graphing
 * Add well selection
 * Arrow keys to home
-* Send status to website
 * Add homing to web interface
 * Store homing on flash
-* Power on / off LED
 * Slay global mutable variables
 * Reduce as many hard-coded values as possible
 * Add lots more logging
 * Only allow certain actions when the machine is in a certain state
+* Allow status to be reverted to previous status
+* Combine all requests to the device into one (sensors & status)

@@ -1,6 +1,7 @@
 // Wait for the page to load before requesting sensor values
 document.addEventListener('DOMContentLoaded', _ => {
     updateReading();
+    updateStatus();
     resetData();
     buildPlate(8, 12);
 });
@@ -13,12 +14,18 @@ var startTime = Date.now();
 function gotoWell(row, col) {
     console.log('Go! (' + row + ',' + col + ')'); 
     req = new Request('/goto', {method: 'POST', body: row + ',' + col});
-    fetch(req).catch(_ => console.log("Shit hit the fan..."));
+    fetch(req).finally();
+}
+
+function toggleLED() {
+    console.log('Toggle LED!');
+    req = new Request('/led', { method: 'POST' });
+    fetch(req).finally();
 }
 
 function resetData() {
     startTime = Date.now();
-    localStorage.clear();
+    localStorage.clear(); // Don't clear on every refresh! Only when clear is pressed.
     changeActive('A1');
 }
 
@@ -38,7 +45,13 @@ function changeActive(well) {
 }
 
 function recordData() {
-    recording = !recording;
+    if (recording) {
+        recording = false;
+        toggleLED();
+    } else {
+        toggleLED();
+        window.setTimeout(() => recording = !recording, 1000);
+    }
 }
 
 function downloadData() {
@@ -84,7 +97,35 @@ function updateReading() {
             }
         })
     });
-    window.setTimeout(updateReading, 1000);
+    window.setTimeout(updateReading, 500);
+}
+
+function updateStatus() {
+    var url = '/status';
+    var statusDisplay = document.getElementById('status-display');
+    fetch(url).then(response => {
+        response.text().then(txt => {
+            statusDisplay.textContent = translateStatus(Number(txt));
+        });
+    });
+    window.setTimeout(updateStatus, 500);
+}
+
+function translateStatus(status) {
+    switch(status) {
+    case 0:
+        return 'Device initialising...';
+    case 1:
+        return 'Ready for reading!';
+    case 2:
+        return 'Homing device, please wait...';
+    case 3:
+        return 'Moving to position...';
+    case 4:
+        return 'Reading absorbance...';
+    case 5:
+        return 'Unknown status';
+    }
 }
 
 function buildPlate(rows, cols) {

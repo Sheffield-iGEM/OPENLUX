@@ -7,13 +7,20 @@ typedef struct poll_args {
   unsigned int samples;
 } poll_args;
 
+// Purge this, make it an argument
+static const int LED = 17;
+
 static int SENSOR_VALUE = 1;
+static int LED_STATUS = 0;
 static void poll_avg(void*);
 
 // Return the task handle
 void start_sensor_polling(adc1_channel_t ch, adc_atten_t atn, unsigned int per) {
   die_politely(adc1_config_width(ADC_WIDTH_BIT_12), "Failed to set ADC bus width");
   die_politely(adc1_config_channel_atten(ch, atn), "Failed to set channel attenuation");
+  // Fail check this
+  gpio_pad_select_gpio(LED);
+  gpio_set_direction(LED, GPIO_MODE_OUTPUT);
   ESP_LOGI(TAG, "Started sensor polling on channel %d at %.2fHz", ch, 1000/((double) per));
   poll_args* args = (poll_args*) malloc(sizeof(poll_args));
   args->channel = ch;
@@ -24,6 +31,12 @@ void start_sensor_polling(adc1_channel_t ch, adc_atten_t atn, unsigned int per) 
 
 int get_sensor_value(void) {
   return SENSOR_VALUE;
+}
+
+void toggle_led() {
+  LED_STATUS = !LED_STATUS;
+  gpio_set_level(LED, LED_STATUS);
+  DEVICE_STATUS = (LED_STATUS) ? READING : READY;
 }
   
 static void poll_avg(void* args) {

@@ -6,11 +6,11 @@ static const gpio_num_t LATCH = GPIO_NUM_19;
 
 static const int STEP_PERIOD = 3;
 static const int WELL_SPACING = 460;
-static const int R_OFFSET = 250;
-static const int C_OFFSET = 260;
+static const int R_OFFSET = 275;
+static const int C_OFFSET = 255;
 
-static int R_TAR = R_OFFSET;
-static int C_TAR = C_OFFSET;
+static int R_TAR = 0;
+static int C_TAR = 0;
 static int R_POS = 0;
 static int C_POS = 0;
 
@@ -21,8 +21,8 @@ void home_motors() {
   drive_motors(LOWER_MOTORS, -4000, 2);
   ESP_LOGI(TAG, "Column");
   drive_motors(UPPER_MOTORS, -6000, 2);
-  // drive_motors(LOWER_MOTORS, R_OFFSET, STEP_PERIOD);
-  // drive_motors(UPPER_MOTORS, C_OFFSET, STEP_PERIOD);
+  drive_motors(LOWER_MOTORS, R_OFFSET, STEP_PERIOD);
+  drive_motors(UPPER_MOTORS, C_OFFSET, STEP_PERIOD);
   shift_byte(0x00);
   ESP_LOGI(TAG, "Homed!");
   DEVICE_STATUS = READY;
@@ -70,7 +70,7 @@ void setup_motor_driver() {
 // This should be combined with another function...
 void start_goto_loop() {
   TaskHandle_t goto_handle = NULL;
-  xTaskCreate(goto_loop, "MOTOR_MOVEMENT", 4096, NULL, 3, &goto_handle);
+  xTaskCreate(goto_loop, "MOTOR_MOVEMENT", 4096, NULL, 4, &goto_handle);
 }
 
 void shift_byte(char byte) {

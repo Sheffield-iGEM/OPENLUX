@@ -12,6 +12,7 @@ static const long CHUNK_SIZE = 24576; // 24KiB
 static esp_err_t sensor_get(httpd_req_t*);
 static esp_err_t status_get(httpd_req_t*);
 static esp_err_t goto_post(httpd_req_t*);
+static esp_err_t led_post(httpd_req_t*);
 static esp_err_t static_get(httpd_req_t*);
 // Helper functions:
 static char* file_to_mime(char[]);
@@ -31,6 +32,13 @@ httpd_uri_t status_get_uri = {
   .uri      = "/status",
   .method   = HTTP_GET,
   .handler  = status_get,
+  .user_ctx = NULL
+};
+
+httpd_uri_t led_post_uri = {
+  .uri      = "/led",
+  .method   = HTTP_POST,
+  .handler  = led_post,
   .user_ctx = NULL
 };
 
@@ -69,7 +77,6 @@ static esp_err_t sensor_get(httpd_req_t* req) {
 static esp_err_t status_get(httpd_req_t* req) {
   char msg[2];
   sprintf(msg, "%d", DEVICE_STATUS);
-  ESP_LOGI(TAG, "Status asked...");
   // Our text isn't HTML, so just set the response type to text/plain
   die_politely(httpd_resp_set_type(req, "text/plain"), "Failed to set response type");
   // Send the value back in an HTTP response, handling failure
@@ -86,6 +93,12 @@ static esp_err_t goto_post(httpd_req_t* req) {
   int row = atoi(strtok(well, ","));
   int col = atoi(strtok(NULL, ","));
   goto_coord(row,col);
+  httpd_resp_send(req, "", 0);
+  return ESP_OK;
+}
+
+static esp_err_t led_post(httpd_req_t* req) {
+  toggle_led();
   httpd_resp_send(req, "", 0);
   return ESP_OK;
 }
@@ -124,6 +137,7 @@ httpd_handle_t start_webserver(void) {
     httpd_register_uri_handler(server, &sensor_get_uri);
     httpd_register_uri_handler(server, &status_get_uri);
     httpd_register_uri_handler(server, &goto_post_uri);
+    httpd_register_uri_handler(server, &led_post_uri);
     httpd_register_uri_handler(server, &static_get_uri);
     return server;
   }
