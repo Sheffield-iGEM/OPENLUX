@@ -54,11 +54,10 @@ p {
 #control-panel{
     background-image: url("svg/bulb.svg");
     display: inline-block;
-    width: 50vw;
+    width: 49vw;
     height:30vw;
     vertical-align:top;
     background-repeat: no-repeat;
-    /*opacity: 0.7;*/
     background-position: center;
 }
 
@@ -102,10 +101,9 @@ p {
 
 #plate {
     display: grid;
-    width: 42vw;
-    height:26vw;
+    width: 46vw;
     grid-template-columns: 1fr repeat(12, var(--well-size)) 1fr;
-    grid-template-rows: 1fr repeat(8, var(--well-size)) 1fr;
+    grid-template-rows: 1fr repeat(8, auto) 1fr;
     grid-gap: var(--grid-gap-size);
     background-color: #444;
     padding: 0.5rem;
@@ -129,6 +127,7 @@ p {
     display: grid;
     grid-template-columns: repeat(12, var(--well-size));
     grid-gap: var(--grid-gap-size);
+    align-items: center;
 }
 
 #col-labs > p {
@@ -148,15 +147,18 @@ p {
 
 .well {
     background-color: #226;
+    width: 100%;
+    padding-bottom: 100%;
     border-radius: 10%;
     margin: 0;
 }
+
 .well:hover {
     background-color: #42cbf5;
-    margin: 0;
 }
-.well > p {
-    display: none;
+
+.well.selected {
+    background-color: greenyellow;
 }
 
 #plate > * > p, #plate > * > * > p {

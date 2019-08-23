@@ -1,12 +1,13 @@
 // Wait for the page to load before requesting sensor values
 document.addEventListener('DOMContentLoaded', _ => {
-    updateReading();
-    updateStatus();
+    // updateReading();
+    // updateStatus();
     resetData();
     buildPlate(8, 12);
 });
 
 var recording = false;
+var status = 1;//0;
 var activeWell = '';
 var startTime = Date.now();
 
@@ -30,13 +31,16 @@ function resetData() {
 }
 
 function changeActive(well) {
+    if (recording) {
+        recordData();
+    }
     activeWell = well;
     var wells = JSON.parse(localStorage.getItem('Wells'));
     if (wells == null) {
         wells = [];
     }
-    console.log(wells);
-    console.log(activeWell);
+    // console.log(wells);
+    // console.log(activeWell);
     if (!wells.includes(activeWell)) {
         wells.push(activeWell)
         localStorage.setItem('Wells', JSON.stringify(wells));
@@ -52,6 +56,7 @@ function recordData() {
         toggleLED();
         window.setTimeout(() => recording = !recording, 1000);
     }
+    console.log('Recording: ' + recording);
 }
 
 function downloadData() {
@@ -105,7 +110,8 @@ function updateStatus() {
     var statusDisplay = document.getElementById('status-display');
     fetch(url).then(response => {
         response.text().then(txt => {
-            statusDisplay.textContent = translateStatus(Number(txt));
+            status = Number(txt);
+            statusDisplay.textContent = translateStatus(status);
         });
     });
     window.setTimeout(updateStatus, 500);
@@ -147,20 +153,84 @@ function buildPlate(rows, cols) {
             }
             var name = rl + c;
             var well = document.createElement('div');
-            var wellp = document.createElement('p');
-            var text = document.createTextNode(name);
-            wellp.appendChild(text);
-            well.appendChild(wellp);
             well.classList.add('well');
             well.id = name;
-            (function (r,c,name) {
-                well.addEventListener('click', function () {
-                    console.log(name);
-                    changeActive(name);
-                    gotoWell(r,c);
-                });
-            })(r,c,name);
+            wellClickListener(well, r, c, name);
             plate.appendChild(well);
         }
     }
+}
+
+function nameToCoords(name) {
+    var row = name.charCodeAt(0) - 64;
+    var col = Number(name.slice(1));
+    return {r: row, c: col};
+}
+
+function coordToName(r,c) {
+    return String.fromCharCode(64 + r) + c;
+} 
+
+function wellClickListener(well, r, c, name) {
+    well.addEventListener('click', () => {
+        // changeActive(name);
+        // gotoWell(r,c);
+        if (well.classList.contains('selected')) {
+            well.classList.remove('selected');
+        } else {
+            well.classList.add('selected');
+        }
+    });
+}
+
+function readSelected() {
+    var selectedWells = document.querySelectorAll('.well.selected');
+    console.log('Reading wells: ');
+    console.log([...selectedWells]);
+    readWells([...selectedWells]);
+}
+
+function readWells(wells) {
+    if (status == 1 && wells.length > 0) {
+        console.log('Here');
+        console.log(wells);
+        var well = wells.shift();
+        console.log('Active well: ' + activeWell);
+        if (activeWell == well.id) {
+            console.log('activewell');
+            recordData();
+            window.setTimeout(recordData, 3000);
+            window.setTimeout(setActiveWellColor, 3100);
+            window.setTimeout(readWells, 3100, wells);
+        } else {
+            console.log('else');
+            var {r, c} = nameToCoords(well.id);
+            changeActive(well.id);
+            gotoWell(r,c);
+            console.log('nearly there');
+            wells.unshift(well)
+            window.setTimeout(readWells, 1000, wells);
+        }
+    }
+}
+
+function sensorToOD(val) {
+    return (val-2836) / -378;
+}
+
+function ODToHue(val) {
+    var norm = val / 2.0;
+    var hue = norm * 240;
+    return hue;
+}
+    
+function setActiveWellColor() {
+    console.log('Setting color');
+    var well = document.getElementById(activeWell);
+    var wellData = JSON.parse(localStorage.getItem(activeWell));
+    if (wellData.length > 0) {
+        var rec = wellData.pop()
+        well.style.backgroundColor = 'hsl(' + ODToHue(rec.val) +', 100, 50)';
+    }
+    well.style.backgroundColor = 'black';
 }
