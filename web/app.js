@@ -1,26 +1,27 @@
 // Wait for the page to load before requesting sensor values
 document.addEventListener('DOMContentLoaded', _ => {
     updateReading();
-    updateStatus();
     resetData();
     buildPlate(8, 12);
 });
 
 var recording = false;
-var status = 0;//0;
+var status = -1;
 var activeWell = '';
 var startTime = Date.now();
 
 // Take a well name String at some point
 function gotoWell(row, col) {
+    status = -1;
     console.log('Go! (' + row + ',' + col + ')'); 
-    req = new Request('/goto', {method: 'POST', body: row + ',' + col});
+    req = new Request('/command', {method: 'POST', body: row + ',' + col + ';0'});
     fetch(req).finally();
 }
 
-function toggleLED() {
-    console.log('Toggle LED!');
-    req = new Request('/led', { method: 'POST' });
+function powerLED() {
+    console.log('Power LED!');
+    var well = nameToCoords(activeWell);
+    req = new Request('/command', { method: 'POST', body: well.r + ',' + well.c + ';1'});
     fetch(req).finally();
 }
 
@@ -49,11 +50,12 @@ function changeActive(well) {
 }
 
 function recordData() {
+    status = -1;
     if (recording) {
         recording = false;
-        toggleLED();
+        powerLED();
     } else {
-        toggleLED();
+        powerLED();
         window.setTimeout(() => recording = !recording, 1000);
     }
     console.log('Recording: ' + recording);
@@ -86,39 +88,33 @@ function exportCSV() {
 }
 
 function updateReading() {
-    var url = '/sensor';
+    var url = '/status';
     var dataDisplay = document.getElementById('data-display');
+    var statusDisplay = document.getElementById('status-display');
     fetch(url).then(response => {
         response.text().then(txt => {
-            dataDisplay.textContent = txt;
+            var status = txt.split(';')[0];
+            var sensor = txt.split(';')[1];
+            dataDisplay.textContent = sensor;
+            statusDisplay.textContent = translateStatus(status);
             if (recording) {
                 var data = JSON.parse(localStorage.getItem(activeWell));
                 console.log(data);
                 data.push({
                     time: (Date.now() - startTime) / 1000,
-                    val: Number(txt)
+                    val: Number(sensor)
                 });
                 localStorage.setItem(activeWell, JSON.stringify(data));
             }
         })
     });
-    window.setTimeout(updateReading, 500);
-}
-
-function updateStatus() {
-    var url = '/status';
-    var statusDisplay = document.getElementById('status-display');
-    fetch(url).then(response => {
-        response.text().then(txt => {
-            status = Number(txt);
-            statusDisplay.textContent = translateStatus(status);
-        });
-    });
-    window.setTimeout(updateStatus, 500);
+    window.setTimeout(updateReading, 1000);
 }
 
 function translateStatus(status) {
     switch(Number(status)) {
+    case -1:
+        return 'Waiting for status update...';
     case 0:
         return 'Device initialising...';
     case 1:
@@ -199,9 +195,10 @@ function readWells(wells) {
         if (activeWell == well.id) {
             console.log('activewell');
             recordData();
+            status = -1;
             window.setTimeout(recordData, 3000);
             window.setTimeout(setActiveWellColor, 3100);
-            window.setTimeout(readWells, 3100, wells);
+            window.setTimeout(readWells, 3200, wells);
         } else {
             console.log('else');
             var {r, c} = nameToCoords(well.id);
@@ -211,8 +208,8 @@ function readWells(wells) {
             wells.unshift(well)
             window.setTimeout(readWells, 1000, wells);
         }
-    } else {
-        window.setTimeout(readWells, 1000, wells);
+    } else if (wells.length > 0) {
+        window.setTimeout(readWells, 1, wells);
     }
 }
 
@@ -230,9 +227,11 @@ function setActiveWellColor() {
     console.log('Setting color');
     var well = document.getElementById(activeWell);
     var wellData = JSON.parse(localStorage.getItem(activeWell));
+    console.log(wellData);
     if (wellData.length > 0) {
+        console.log("Send help");
         var rec = wellData.pop()
-        well.style.backgroundColor = 'hsl(' + ODToHue(rec.val) +', 100, 50)';
+        console.log(well);
+        well.style.backgroundColor = 'hsl(' + ODToHue(rec.val) +', 100%, 50%)';
     }
-    well.style.backgroundColor = 'black';
 }

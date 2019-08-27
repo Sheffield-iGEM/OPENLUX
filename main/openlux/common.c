@@ -4,8 +4,31 @@
 const char* TAG = "OpenLUX";
 // Where on the file system we are storing web data
 const char* WEB = "/web";
+// Status stack
+struct Stack {
+  status_t data[8];
+  int idx;
+};
 // Current status of the machine
-status_t DEVICE_STATUS = INITIALISING;
+struct Stack STAT_STACK = { { INITIALISING }, 0 }; 
+
+void set_status(status_t status) {
+  STAT_STACK.idx++;
+  STAT_STACK.data[STAT_STACK.idx] = status;
+}
+
+void revert_status(void) {
+  STAT_STACK.idx--;
+}
+
+status_t get_status(void) {
+  ESP_LOGI(TAG, "----------------------------------");
+  for(int i = 0; i < STAT_STACK.idx; i++) {
+    ESP_LOGI(TAG, "%d: %d", i, STAT_STACK.data[i]);
+  }
+  ESP_LOGI(TAG, "----------------------------------");
+  return STAT_STACK.data[STAT_STACK.idx];
+}
 
 // This function does not return a value
 // This function takes the result of an action (esp_err_t) and checks whether

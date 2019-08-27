@@ -15,7 +15,7 @@ static int R_POS = 0;
 static int C_POS = 0;
 
 void home_motors() {
-  DEVICE_STATUS = HOMING;
+  set_status(HOMING);
   ESP_LOGI(TAG, "Device is homing...");
   ESP_LOGI(TAG, "Row");
   drive_motors(LOWER_MOTORS, -4000, 2);
@@ -25,7 +25,7 @@ void home_motors() {
   drive_motors(UPPER_MOTORS, C_OFFSET, STEP_PERIOD);
   shift_byte(0x00);
   ESP_LOGI(TAG, "Homed!");
-  DEVICE_STATUS = READY;
+  revert_status();
   R_POS = 0;
   C_POS = 0;
 }
@@ -41,9 +41,9 @@ void goto_loop(void* args) {
     } else if (c_err) {
       drive_motors(UPPER_MOTORS, c_err, STEP_PERIOD);
       C_POS += c_err;
-    } else if (DEVICE_STATUS == MOVING) {
+    } else if (get_status() == MOVING) {
       ESP_LOGI(TAG, "Done moving!");
-      DEVICE_STATUS = READY;
+      revert_status();
       shift_byte(0x00);
     }
     vTaskDelay(5); // Find a meaningful number to put here
@@ -54,7 +54,7 @@ void goto_coord(int row, int col) {
   ESP_LOGI(TAG, "Moving to row %d and column %d...", row, col);
   R_TAR = (row - 1) * WELL_SPACING;
   C_TAR = (col - 1) * WELL_SPACING;
-  DEVICE_STATUS = MOVING;
+  set_status(MOVING);
 }
 
 void setup_motor_driver() {

@@ -10,8 +10,7 @@ typedef struct poll_args {
 // Purge this, make it an argument
 static const int LED = 17;
 
-static int SENSOR_VALUE = 1;
-static int LED_STATUS = 0;
+static int SENSOR_VALUE = -1;
 static void poll_avg(void*);
 
 // Return the task handle
@@ -33,10 +32,9 @@ int get_sensor_value(void) {
   return SENSOR_VALUE;
 }
 
-void toggle_led() {
-  LED_STATUS = !LED_STATUS;
-  gpio_set_level(LED, LED_STATUS);
-  DEVICE_STATUS = (LED_STATUS) ? READING : READY;
+void set_led(int status) {
+  gpio_set_level(LED, status);
+  (status) ? set_status(READING) : revert_status();
 }
   
 static void poll_avg(void* args) {
