@@ -27,7 +27,7 @@ function toggleLED() {
 function resetData() {
     startTime = Date.now();
     localStorage.clear(); // Don't clear on every refresh! Only when clear is pressed.
-    changeActive('A1');
+    // changeActive('A1');
 }
 
 function changeActive(well) {
@@ -173,8 +173,8 @@ function coordToName(r,c) {
 
 function wellClickListener(well, r, c, name) {
     well.addEventListener('click', () => {
-        changeActive(name);
-        gotoWell(r,c);
+        // changeActive(name);
+        // gotoWell(r,c);
         if (well.classList.contains('selected')) {
             well.classList.remove('selected');
         } else {
@@ -211,6 +211,8 @@ function readWells(wells) {
             wells.unshift(well)
             window.setTimeout(readWells, 1000, wells);
         }
+    } else {
+        window.setTimeout(readWells, 1000, wells);
     }
 }
 
