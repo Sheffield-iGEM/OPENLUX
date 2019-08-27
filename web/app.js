@@ -1,13 +1,13 @@
 // Wait for the page to load before requesting sensor values
 document.addEventListener('DOMContentLoaded', _ => {
-    // updateReading();
-    // updateStatus();
+    updateReading();
+    updateStatus();
     resetData();
     buildPlate(8, 12);
 });
 
 var recording = false;
-var status = 1;//0;
+var status = 0;//0;
 var activeWell = '';
 var startTime = Date.now();
 
@@ -118,7 +118,7 @@ function updateStatus() {
 }
 
 function translateStatus(status) {
-    switch(status) {
+    switch(Number(status)) {
     case 0:
         return 'Device initialising...';
     case 1:
@@ -173,8 +173,8 @@ function coordToName(r,c) {
 
 function wellClickListener(well, r, c, name) {
     well.addEventListener('click', () => {
-        // changeActive(name);
-        // gotoWell(r,c);
+        changeActive(name);
+        gotoWell(r,c);
         if (well.classList.contains('selected')) {
             well.classList.remove('selected');
         } else {
