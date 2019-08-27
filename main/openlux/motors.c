@@ -7,7 +7,7 @@ static const gpio_num_t LATCH = GPIO_NUM_19;
 static const int STEP_PERIOD = 3;
 static const int WELL_SPACING = 460;
 static const int R_OFFSET = 275;
-static const int C_OFFSET = 255;
+static const int C_OFFSET = 230;
 
 static int R_TAR = 0;
 static int C_TAR = 0;
