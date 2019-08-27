@@ -34,6 +34,7 @@ int get_sensor_value(void) {
 
 void set_led(int status) {
   gpio_set_level(LED, status);
+  ESP_LOGI(TAG, "LED set to %d", status);
   (status) ? set_status(READING) : revert_status();
 }
   

@@ -18,10 +18,10 @@ function gotoWell(row, col) {
     fetch(req).finally();
 }
 
-function powerLED() {
+function powerLED(val) {
     console.log('Power LED!');
     var well = nameToCoords(activeWell);
-    req = new Request('/command', { method: 'POST', body: well.r + ',' + well.c + ';1'});
+    req = new Request('/command', { method: 'POST', body: well.r + ',' + well.c + ';' + val});
     fetch(req).finally();
 }
 
@@ -53,9 +53,9 @@ function recordData() {
     status = -1;
     if (recording) {
         recording = false;
-        powerLED();
+        powerLED(0);
     } else {
-        powerLED();
+        powerLED(1);
         window.setTimeout(() => recording = !recording, 1000);
     }
     console.log('Recording: ' + recording);
@@ -93,7 +93,7 @@ function updateReading() {
     var statusDisplay = document.getElementById('status-display');
     fetch(url).then(response => {
         response.text().then(txt => {
-            var status = txt.split(';')[0];
+            status = Number(txt.split(';')[0]);
             var sensor = txt.split(';')[1];
             dataDisplay.textContent = sensor;
             statusDisplay.textContent = translateStatus(status);
@@ -210,6 +210,7 @@ function readWells(wells) {
         }
     } else if (wells.length > 0) {
         window.setTimeout(readWells, 1, wells);
+        console.log('Status is: ' + status);
     }
 }
 

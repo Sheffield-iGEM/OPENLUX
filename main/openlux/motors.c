@@ -37,9 +37,11 @@ void goto_loop(void* args) {
     int c_err = C_TAR - C_POS;
     if (r_err) {
       drive_motors(LOWER_MOTORS, r_err, STEP_PERIOD);
+      set_status(MOVING);
       R_POS += r_err;
     } else if (c_err) {
       drive_motors(UPPER_MOTORS, c_err, STEP_PERIOD);
+      set_status(MOVING);
       C_POS += c_err;
     } else if (get_status() == MOVING) {
       ESP_LOGI(TAG, "Done moving!");
@@ -54,7 +56,6 @@ void goto_coord(int row, int col) {
   ESP_LOGI(TAG, "Moving to row %d and column %d...", row, col);
   R_TAR = (row - 1) * WELL_SPACING;
   C_TAR = (col - 1) * WELL_SPACING;
-  set_status(MOVING);
 }
 
 void setup_motor_driver() {

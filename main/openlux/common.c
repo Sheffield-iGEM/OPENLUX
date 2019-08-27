@@ -22,11 +22,17 @@ void revert_status(void) {
 }
 
 status_t get_status(void) {
-  ESP_LOGI(TAG, "----------------------------------");
-  for(int i = 0; i < STAT_STACK.idx; i++) {
-    ESP_LOGI(TAG, "%d: %d", i, STAT_STACK.data[i]);
-  }
-  ESP_LOGI(TAG, "----------------------------------");
+  ESP_LOGI(TAG, "[%d,%d,%d,%d,%d,%d,%d,%d] (%d)",
+           STAT_STACK.data[0],
+           STAT_STACK.data[1],
+           STAT_STACK.data[2],
+           STAT_STACK.data[3],
+           STAT_STACK.data[4],
+           STAT_STACK.data[5],
+           STAT_STACK.data[6],
+           STAT_STACK.data[7],
+           STAT_STACK.idx
+           );
   return STAT_STACK.data[STAT_STACK.idx];
 }
 
