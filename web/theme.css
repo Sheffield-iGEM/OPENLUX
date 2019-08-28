@@ -2,42 +2,42 @@
 
 :root {
     --grid-gap-size: 0.5rem;
-    --well-size: 2fr/*3rem;*/
-}
+    --well-size: 2fr;
+	--well-border-size:0.2rem;
+	}
 
 
 body {
-    background-color: grey;
+    background-color: black;
     font-family: 'Lato', sans-serif;
     font-size: 16px;
+	margin: 0;
+    padding: 0;
 }
 
 button {
     background-color: #4CAF50; /* Green */
     border: none;
     color: white;
-    padding: 15px 32px;
+    /*! padding: 15px 32px; */
     text-align: center;
     text-decoration: none;
     display: inline-block;
     font-size: 16px;
-    border-radius: 10px;
+    border-radius: 5px;
+	padding-bottom:1rem;
+	padding-top:1rem;
+
 }
 button:hover {background-color: #3e8e41}
 
 img {
-    width:10rem;
-    min-width: 80%;
-    max-height:10%;
-    height: auto;
-    display: block;
+	
+	
     margin-left: auto;
     margin-right: auto;
-    
-    object-fit: cover;
-
-    width: 300px;
-    height: 300px;
+    height:80%
+ 
 }
 
 h1 {
@@ -50,23 +50,64 @@ h1 {
 p {
     font-size: 20px;
 }
+#wrapper-layout{
+	display: grid;
+	grid-template-columns: 1fr;
+    grid-template-rows: 10vh 80vh 10vh;
+	height: 100%;
+	
+}
+#header-section{
+	grid-area: 1 / 1 / span 1/ span 1;
+	background-color: black;
+	padding:1rem;
+	justify-self:center;
+	align-self:center;
+	
+	
+}
 
-#control-panel{
-    background-image: url("svg/bulb.svg");
-    display: inline-block;
-    width: 49vw;
-    height:30vw;
-    vertical-align:top;
-    background-repeat: no-repeat;
-    background-position: center;
+#header-section div{
+	display:inline-block;
+}
+
+#body-section{
+	grid-area: 2 / 1 / span 1/ span 1;
+	background-color: white;
+	padding:1rem;
+	
+	display:grid;
+	grid-template-columns: 1fr auto 1fr;
+    grid-template-rows: 1fr 6fr 1fr;
+	
+}
+#footer-section{
+	grid-area: 3 / 1 / span 1/ span 1;
+	background-color: black;
+	
+
+	
+}
+
+#openlux-text{
+	height:80%;
+}
+#openlux-logo{
+	height:10%;
 }
 
 #button-ui{	
+	justify-self:center;
+	align-self:center;
+
+	grid-area: 1 / 1 / span 1/ span 3;
+	
+	
     display:grid;
-    grid-template-columns: 1fr 2fr 1fr;
-    grid-template-rows: 1fr 5fr;
+    grid-template-columns: repeat(5, 1fr);
+    grid-template-rows: 1fr;
     grid-gap: 1rem;
-    padding-left: 1rem;
+	padding-bottom:1rem;
 }
 
 #record-btn{
@@ -86,30 +127,36 @@ p {
     position: relative;
 }
 
-#canvas-graph {
-    
-    background-color: rgba(255,255,255,0.5);
-    position: absolute;
-    height: 100%;
-    width: 100%;
-}
 
-#plate-holder {
-    display: inline-block;
-
+#heat-map{
+	width:1rem;
+	height:80%;
+	margin-left:2rem;
+	justify-self:start;
+	align-self:center;
+	grid-area: 2 / 3 / span 1/ span 1;
+	background-image: linear-gradient(red,orange,yellow,green,blue,indigo,violet); 
 }
 
 #plate {
+	
+	justify-self:center;
+	align-self:center;
+
+	grid-area: 2 / 2 / span 1/ span 1;
+	
     display: grid;
-    width: 46vw;
+	width:70vh;
+	max-width:70vw;
+	max-height:100%;
     grid-template-columns: 1fr repeat(12, var(--well-size)) 1fr;
     grid-template-rows: 1fr repeat(8, auto) 1fr;
     grid-gap: var(--grid-gap-size);
     background-color: #444;
     padding: 0.5rem;
-    border-style: solid;
-    border-width: 2px;
-    border-color: white;
+	margin:auto;
+ 
+  
     border-radius: 5px;
 }
 
@@ -143,22 +190,45 @@ p {
     grid-gap: var(--grid-gap-size);
 }
 
+#output-text{
+	grid-area: 3 / 1 / span 1/ span 3;
+	
+	justify-self:center;
+	align-self:center;
+	align-content:space-between;
+	
+	display:grid;
+	grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: 1fr;
+	
+}
 
 
+
+.display-text{
+	margin:auto;
+}
 .well {
-    background-color: #226;
+    background-color: hsl(0, 0%, 70%);
     width: 100%;
     padding-bottom: 100%;
     border-radius: 10%;
-    margin: 0;
+    margin: var(--well-border-size);
+	
 }
 
 .well:hover {
-    background-color: #42cbf5;
+    border-style: solid;
+	border-color:#4CAF50;
+	border-width:var(--well-border-size);
+	margin: 0px;
 }
 
 .well.selected {
-    background-color: greenyellow;
+	border-style: solid;
+    border-color:greenyellow;
+	border-width:var(--well-border-size);
+	margin: 0px;
 }
 
 #plate > * > p, #plate > * > * > p {
