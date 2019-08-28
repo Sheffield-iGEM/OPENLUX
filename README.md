@@ -21,3 +21,4 @@ long ways behind. Things will be cleaned up and commented in September.
 * Allow status to be reverted to previous status
 * Combine all requests to the device into one (sensors & status)
 * Fixed number of readings rather than time per well
+* Store synckey and active well in the localstorage

@@ -57,7 +57,7 @@ function recordData() {
         powerLED(0);
     } else {
         powerLED(1);
-        window.setTimeout(() => recording = !recording, 1000);
+        window.setTimeout(() => recording = !recording, 300);
     }
     // console.log('Recording: ' + recording);
 }
@@ -113,7 +113,7 @@ function updateReading() {
             }
         });
     });
-    window.setTimeout(updateReading, 2000);
+    window.setTimeout(updateReading, 300);
 }
 
 function translateStatus(status) {
@@ -219,7 +219,7 @@ function readWells(wells) {
         }
     } else if (wells.length > 0) {
         window.setTimeout(readWells, 1, wells);
-        console.log('Status is: ' + status + ' Pending: ' + pending);
+        console.log('Status is: ' + status);
     }
 }
 

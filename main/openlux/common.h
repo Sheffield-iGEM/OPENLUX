@@ -22,4 +22,6 @@ extern void revert_status(void);
 extern status_t get_status(void);
 // Error handling:
 extern void die_politely(esp_err_t, char[]);
+// Kill me
+int SYNC_KEY;
 #endif

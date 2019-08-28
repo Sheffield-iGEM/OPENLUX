@@ -32,13 +32,13 @@ int get_sensor_value(void) {
   return SENSOR_VALUE;
 }
 
-void set_led(int status) {
+void set_led(int status) { // The key makes me ill. Better place for it...
   gpio_set_level(LED, status);
   ESP_LOGI(TAG, "LED set to %d", status);
   if (status && get_status() != READING) {
     set_status(READING);
   }
-  if (!status && get_status() == READING) {
+  if (!status && (get_status() == READING)) {
     revert_status();
   }
 }

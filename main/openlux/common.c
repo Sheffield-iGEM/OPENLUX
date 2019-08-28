@@ -10,7 +10,8 @@ struct Stack {
   int idx;
 };
 // Current status of the machine
-struct Stack STAT_STACK = { { INITIALISING }, 0 }; 
+struct Stack STAT_STACK = { { INITIALISING }, 0 };
+int SYNC_KEY = 0;
 
 void set_status(status_t status) {
   STAT_STACK.idx++;

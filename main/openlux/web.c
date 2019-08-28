@@ -17,8 +17,6 @@ static char* file_to_mime(char[]);
 static void uri_to_path(char*, const char*);
 static void send_file_as_chunks(httpd_req_t*, char[]);
 
-static int SYNC_KEY = 0;
-
 // Set up some valid URIs
 httpd_uri_t status_get_uri = {
   .uri      = "/status", // Sensor readings & status live here
@@ -61,7 +59,7 @@ static esp_err_t command_post(httpd_req_t* req) {
   char data[req->content_len + 1];
   httpd_req_recv(req, data, req->content_len);
   //data[sizeof(data) - 1] = '\0';
-  SYNC_KEY = atoi(strtok(data, ";"));
+  int sync = atoi(strtok(data, ";"));
   char *coord = strtok(NULL, ";");
   int led = atoi(strtok(NULL, ";"));
   int row = atoi(strtok(coord, ","));
@@ -69,6 +67,8 @@ static esp_err_t command_post(httpd_req_t* req) {
   goto_coord(row,col);
   set_led(led);
   httpd_resp_send(req, "", 0);
+  ESP_LOGI(TAG, "New sync key is: %d, and the status is: %d", sync, get_status());
+  SYNC_KEY = sync;
   return ESP_OK;
 }
 
