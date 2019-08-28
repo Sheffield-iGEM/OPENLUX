@@ -11,7 +11,6 @@ long ways behind. Things will be cleaned up and commented in September.
 * Pick char* or char[]
 * Add a way to stop sensor polling
 * Add graphing
-* Add well selection
 * Arrow keys to home
 * Add homing to web interface
 * Store homing on flash
@@ -21,3 +20,5 @@ long ways behind. Things will be cleaned up and commented in September.
 * Only allow certain actions when the machine is in a certain state
 * Allow status to be reverted to previous status
 * Combine all requests to the device into one (sensors & status)
+* Fixed number of readings rather than time per well
+* Store synckey and active well in the localstorage

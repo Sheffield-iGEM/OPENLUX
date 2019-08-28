@@ -9,10 +9,8 @@ static const long CHUNK_SIZE = 24576; // 24KiB
 
 // Declare some static functions we'll be defining later.
 // URI handlers:
-static esp_err_t sensor_get(httpd_req_t*);
 static esp_err_t status_get(httpd_req_t*);
-static esp_err_t goto_post(httpd_req_t*);
-static esp_err_t led_post(httpd_req_t*);
+static esp_err_t command_post(httpd_req_t*);
 static esp_err_t static_get(httpd_req_t*);
 // Helper functions:
 static char* file_to_mime(char[]);
@@ -20,32 +18,17 @@ static void uri_to_path(char*, const char*);
 static void send_file_as_chunks(httpd_req_t*, char[]);
 
 // Set up some valid URIs
-// URI for returning sensor readings
-httpd_uri_t sensor_get_uri = {
-  .uri      = "/sensor", // Sensor readings live here
-  .method   = HTTP_GET, // We are sending data from the server
-  .handler  = sensor_get, // Assign the sensor_get function to this uri
-  .user_ctx = NULL // No extra data needed
-};
-
 httpd_uri_t status_get_uri = {
-  .uri      = "/status",
-  .method   = HTTP_GET,
-  .handler  = status_get,
-  .user_ctx = NULL
+  .uri      = "/status", // Sensor readings & status live here
+  .method   = HTTP_GET, // We are sending data from the server
+  .handler  = status_get, // Assign the status_get function to this uri
+  .user_ctx = NULL  // No extra data needed
 };
 
-httpd_uri_t led_post_uri = {
-  .uri      = "/led",
+httpd_uri_t command_post_uri = {
+  .uri      = "/command",
   .method   = HTTP_POST,
-  .handler  = led_post,
-  .user_ctx = NULL
-};
-
-httpd_uri_t goto_post_uri = {
-  .uri      = "/goto",
-  .method   = HTTP_POST,
-  .handler  = goto_post,
+  .handler  = command_post,
   .user_ctx = NULL
 };
 
@@ -58,25 +41,12 @@ httpd_uri_t static_get_uri = {
 };
 
 // This handler is very simple. When it receives a request, it sends back the
-// latest available sensor reading. It takes a pointer to the request (so that
-// it can respond to it) and returns ESP_OK if all goes well.
-static esp_err_t sensor_get(httpd_req_t* req) {
-  // Create a string large enough to hold any sensor value (0-4095) plus null terminator
-  char msg[5];
-  // Read the latest sensor value and print it to msg
-  sprintf(msg, "%d", get_sensor_value());
-  // Our text isn't HTML, so just set the response type to text/plain
-  die_politely(httpd_resp_set_type(req, "text/plain"), "Failed to set response type");
-  // Send the value back in an HTTP response, handling failure
-  die_politely(httpd_resp_send(req, msg, strlen(msg)), "Failed to send HTTP response");
-  // Return ESP_OK so the connection isn't killed
-  return ESP_OK;
-}
-
-// This feels redundant...
+// latest available sensor reading and device status. It takes a pointer to the
+// request (so that it can respond to it) and returns ESP_OK if all goes well.
 static esp_err_t status_get(httpd_req_t* req) {
-  char msg[2];
-  sprintf(msg, "%d", DEVICE_STATUS);
+  // 4 (sensor) + 1 (;) + 1 (status) + 1 (null)
+  char msg[7];
+  sprintf(msg, "%d;%d;%d", SYNC_KEY, get_status(), get_sensor_value());
   // Our text isn't HTML, so just set the response type to text/plain
   die_politely(httpd_resp_set_type(req, "text/plain"), "Failed to set response type");
   // Send the value back in an HTTP response, handling failure
@@ -85,21 +55,20 @@ static esp_err_t status_get(httpd_req_t* req) {
   return ESP_OK;
 }
 
-static esp_err_t goto_post(httpd_req_t* req) {
-  // Handle error
-  char well[req->content_len + 1];
-  httpd_req_recv(req, well, req->content_len);
-  well[sizeof(well) - 1] = '\0';
-  int row = atoi(strtok(well, ","));
+static esp_err_t command_post(httpd_req_t* req) {
+  char data[req->content_len + 1];
+  httpd_req_recv(req, data, req->content_len);
+  //data[sizeof(data) - 1] = '\0';
+  int sync = atoi(strtok(data, ";"));
+  char *coord = strtok(NULL, ";");
+  int led = atoi(strtok(NULL, ";"));
+  int row = atoi(strtok(coord, ","));
   int col = atoi(strtok(NULL, ","));
   goto_coord(row,col);
+  set_led(led);
   httpd_resp_send(req, "", 0);
-  return ESP_OK;
-}
-
-static esp_err_t led_post(httpd_req_t* req) {
-  toggle_led();
-  httpd_resp_send(req, "", 0);
+  ESP_LOGI(TAG, "New sync key is: %d, and the status is: %d", sync, get_status());
+  SYNC_KEY = sync;
   return ESP_OK;
 }
 
@@ -134,10 +103,8 @@ httpd_handle_t start_webserver(void) {
   // Try starting the server
   if (httpd_start(&server, &config) == ESP_OK) {
     // Set URI handlers here
-    httpd_register_uri_handler(server, &sensor_get_uri);
     httpd_register_uri_handler(server, &status_get_uri);
-    httpd_register_uri_handler(server, &goto_post_uri);
-    httpd_register_uri_handler(server, &led_post_uri);
+    httpd_register_uri_handler(server, &command_post_uri);
     httpd_register_uri_handler(server, &static_get_uri);
     return server;
   }

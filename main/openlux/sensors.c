@@ -10,8 +10,7 @@ typedef struct poll_args {
 // Purge this, make it an argument
 static const int LED = 17;
 
-static int SENSOR_VALUE = 1;
-static int LED_STATUS = 0;
+static int SENSOR_VALUE = -1;
 static void poll_avg(void*);
 
 // Return the task handle
@@ -26,17 +25,22 @@ void start_sensor_polling(adc1_channel_t ch, adc_atten_t atn, unsigned int per) 
   args->channel = ch;
   args->samples = per / (unsigned int) portTICK_PERIOD_MS;
   TaskHandle_t poll_handle = NULL;
-  xTaskCreate(poll_avg, "SENSOR_POLLING", 4096, args, 3, &poll_handle);
+  xTaskCreate(poll_avg, "SENSOR_POLLING", 4096, args, 2, &poll_handle);
 }
 
 int get_sensor_value(void) {
   return SENSOR_VALUE;
 }
 
-void toggle_led() {
-  LED_STATUS = !LED_STATUS;
-  gpio_set_level(LED, LED_STATUS);
-  DEVICE_STATUS = (LED_STATUS) ? READING : READY;
+void set_led(int status) { // The key makes me ill. Better place for it...
+  gpio_set_level(LED, status);
+  ESP_LOGI(TAG, "LED set to %d", status);
+  if (status && get_status() != READING) {
+    set_status(READING);
+  }
+  if (!status && (get_status() == READING)) {
+    revert_status();
+  }
 }
   
 static void poll_avg(void* args) {

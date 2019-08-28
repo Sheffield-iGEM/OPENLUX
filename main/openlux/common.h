@@ -16,9 +16,12 @@ typedef enum status {
   MOVING,
   READING
 } status_t;
-// Global State:
-// Maybe change this to getters and setters?
-extern status_t DEVICE_STATUS;
+// Status getting and setting:
+extern void set_status(status_t);
+extern void revert_status(void);
+extern status_t get_status(void);
 // Error handling:
 extern void die_politely(esp_err_t, char[]);
+// Kill me
+int SYNC_KEY;
 #endif
