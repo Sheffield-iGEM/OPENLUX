@@ -5,9 +5,9 @@ static const gpio_num_t CLK = GPIO_NUM_21;
 static const gpio_num_t LATCH = GPIO_NUM_19;
 
 static const int STEP_PERIOD = 3;
-static const int WELL_SPACING = 460;
-static const int R_OFFSET = 275;
-static const int C_OFFSET = 255;
+static const int WELL_SPACING = 455;
+static const int R_OFFSET = 250;
+static const int C_OFFSET = 230;
 
 static int R_TAR = 0;
 static int C_TAR = 0;
@@ -18,9 +18,9 @@ void home_motors() {
   set_status(HOMING);
   ESP_LOGI(TAG, "Device is homing...");
   ESP_LOGI(TAG, "Row");
-  drive_motors(LOWER_MOTORS, -4000, 2);
+  drive_motors(LOWER_MOTORS, -4000, STEP_PERIOD);
   ESP_LOGI(TAG, "Column");
-  drive_motors(UPPER_MOTORS, -6000, 2);
+  drive_motors(UPPER_MOTORS, -6000, STEP_PERIOD);
   drive_motors(LOWER_MOTORS, R_OFFSET, STEP_PERIOD);
   drive_motors(UPPER_MOTORS, C_OFFSET, STEP_PERIOD);
   shift_byte(0x00);

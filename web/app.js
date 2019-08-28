@@ -19,7 +19,7 @@ function gotoWell(row, col) {
 }
 
 function powerLED(val) {
-    console.log('Power LED!');
+    console.log('Power LED: ' + val);
     var well = nameToCoords(activeWell);
     req = new Request('/command', { method: 'POST', body: well.r + ',' + well.c + ';' + val});
     fetch(req).finally();
@@ -58,7 +58,7 @@ function recordData() {
         powerLED(1);
         window.setTimeout(() => recording = !recording, 1000);
     }
-    console.log('Recording: ' + recording);
+    // console.log('Recording: ' + recording);
 }
 
 function downloadData() {
@@ -99,7 +99,7 @@ function updateReading() {
             statusDisplay.textContent = translateStatus(status);
             if (recording) {
                 var data = JSON.parse(localStorage.getItem(activeWell));
-                console.log(data);
+                // console.log(data);
                 data.push({
                     time: (Date.now() - startTime) / 1000,
                     val: Number(sensor)
@@ -108,7 +108,7 @@ function updateReading() {
             }
         })
     });
-    window.setTimeout(updateReading, 1000);
+    window.setTimeout(updateReading, 200);
 }
 
 function translateStatus(status) {
@@ -181,31 +181,31 @@ function wellClickListener(well, r, c, name) {
 
 function readSelected() {
     var selectedWells = document.querySelectorAll('.well.selected');
-    console.log('Reading wells: ');
-    console.log([...selectedWells]);
+    // console.log('Reading wells: ');
+    // console.log([...selectedWells]);
     readWells([...selectedWells]);
 }
 
 function readWells(wells) {
     if (status == 1 && wells.length > 0) {
-        console.log('Here');
-        console.log(wells);
+        console.log('Was ready, beginning now!');
+        // console.log(wells);
         var well = wells.shift();
-        console.log('Active well: ' + activeWell);
+        console.log('Active well: ' + activeWell + ' Targeted well: ' + well.id);
         if (activeWell == well.id) {
-            console.log('activewell');
+            console.log('Target well was matched');
             recordData();
             status = -1;
             window.setTimeout(recordData, 3000);
-            window.setTimeout(setActiveWellColor, 3100);
-            window.setTimeout(readWells, 3200, wells);
+            window.setTimeout(setActiveWellColor, 4000);
+            window.setTimeout(readWells, 5000, wells);
         } else {
-            console.log('else');
+            console.log('We are not at the right well yet...');
             var {r, c} = nameToCoords(well.id);
             changeActive(well.id);
             status = -1;
             gotoWell(r,c);
-            console.log('nearly there');
+            // console.log('nearly there');
             wells.unshift(well)
             window.setTimeout(readWells, 1000, wells);
         }
@@ -226,12 +226,12 @@ function ODToHue(val) {
 }
     
 function setActiveWellColor() {
-    console.log('Setting color');
+    // console.log('Setting color');
     var well = document.getElementById(activeWell);
     var wellData = JSON.parse(localStorage.getItem(activeWell));
     console.log(wellData);
     if (wellData.length > 0) {
-        console.log("Send help");
+        // console.log("Send help");
         var rec = wellData.pop()
         var od = sensorToOD(rec.val);
         var odLab = document.createTextNode(od);
