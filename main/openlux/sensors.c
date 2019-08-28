@@ -25,7 +25,7 @@ void start_sensor_polling(adc1_channel_t ch, adc_atten_t atn, unsigned int per) 
   args->channel = ch;
   args->samples = per / (unsigned int) portTICK_PERIOD_MS;
   TaskHandle_t poll_handle = NULL;
-  xTaskCreate(poll_avg, "SENSOR_POLLING", 4096, args, 3, &poll_handle);
+  xTaskCreate(poll_avg, "SENSOR_POLLING", 4096, args, 2, &poll_handle);
 }
 
 int get_sensor_value(void) {

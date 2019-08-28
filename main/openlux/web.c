@@ -17,6 +17,8 @@ static char* file_to_mime(char[]);
 static void uri_to_path(char*, const char*);
 static void send_file_as_chunks(httpd_req_t*, char[]);
 
+static int SYNC_KEY = 0;
+
 // Set up some valid URIs
 httpd_uri_t status_get_uri = {
   .uri      = "/status", // Sensor readings & status live here
@@ -46,7 +48,7 @@ httpd_uri_t static_get_uri = {
 static esp_err_t status_get(httpd_req_t* req) {
   // 4 (sensor) + 1 (;) + 1 (status) + 1 (null)
   char msg[7];
-  sprintf(msg, "%d;%d", get_status(), get_sensor_value());
+  sprintf(msg, "%d;%d;%d", SYNC_KEY, get_status(), get_sensor_value());
   // Our text isn't HTML, so just set the response type to text/plain
   die_politely(httpd_resp_set_type(req, "text/plain"), "Failed to set response type");
   // Send the value back in an HTTP response, handling failure
@@ -59,7 +61,8 @@ static esp_err_t command_post(httpd_req_t* req) {
   char data[req->content_len + 1];
   httpd_req_recv(req, data, req->content_len);
   //data[sizeof(data) - 1] = '\0';
-  char *coord = strtok(data, ";");
+  SYNC_KEY = atoi(strtok(data, ";"));
+  char *coord = strtok(NULL, ";");
   int led = atoi(strtok(NULL, ";"));
   int row = atoi(strtok(coord, ","));
   int col = atoi(strtok(NULL, ","));

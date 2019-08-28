@@ -6,29 +6,25 @@ document.addEventListener('DOMContentLoaded', _ => {
 });
 
 var recording = false;
-var pending = false;
 var status = -1;
 var activeWell = '';
 var startTime = Date.now();
+var syncKey = 0;
 
 // Take a well name String at some point
 function gotoWell(row, col) {
+    syncKey++;
     console.log('Go! (' + row + ',' + col + ')'); 
-    req = new Request('/command', {method: 'POST', body: row + ',' + col + ';0'});
-    fetch(req).then(() => {
-        pending = false;
-        console.log('Pending unset (' + status + ')');
-    });
+    req = new Request('/command', {method: 'POST', body: syncKey + ';' + row + ',' + col + ';0'});
+    fetch(req).finally();
 }
 
 function powerLED(val) {
+    syncKey++;
     console.log('Power LED: ' + val);
     var well = nameToCoords(activeWell);
-    req = new Request('/command', { method: 'POST', body: well.r + ',' + well.c + ';' + val});
-    fetch(req).then(() => {
-        pending = false;
-        console.log('Pending unset');
-    });
+    req = new Request('/command', { method: 'POST', body: syncKey + ';' + well.r + ',' + well.c + ';' + val});
+    fetch(req).finally();
 }
 
 function resetData() {
@@ -96,12 +92,13 @@ function updateReading() {
     var url = '/status';
     var dataDisplay = document.getElementById('data-display');
     var statusDisplay = document.getElementById('status-display');
-    if (!pending) {
-        fetch(url).then(response => {
-            response.text().then(txt => {
-                status = (pending) ? status : Number(txt.split(';')[0]);
+    fetch(url).then(response => {
+        response.text().then(txt => {
+            if (Number(txt.split(';')[0]) == syncKey) {
+                console.log('Synckeys match! (' + syncKey + ')');
+                status = Number(txt.split(';')[1]);
                 console.log('Got status: ' + status);
-                var sensor = txt.split(';')[1];
+                var sensor = txt.split(';')[2];
                 dataDisplay.textContent = sensor;
                 statusDisplay.textContent = translateStatus(status);
                 if (recording) {
@@ -113,10 +110,10 @@ function updateReading() {
                     });
                     localStorage.setItem(activeWell, JSON.stringify(data));
                 }
-            })
+            }
         });
-    }
-    window.setTimeout(updateReading, 200);
+    });
+    window.setTimeout(updateReading, 2000);
 }
 
 function translateStatus(status) {

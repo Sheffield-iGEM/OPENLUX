@@ -69,7 +69,7 @@ void setup_motor_driver() {
 // This should be combined with another function...
 void start_goto_loop() {
   TaskHandle_t goto_handle = NULL;
-  xTaskCreate(goto_loop, "MOTOR_MOVEMENT", 4096, NULL, 4, &goto_handle);
+  xTaskCreate(goto_loop, "MOTOR_MOVEMENT", 4096, NULL, 3, &goto_handle);
 }
 
 void shift_byte(char byte) {
