@@ -6,23 +6,29 @@ document.addEventListener('DOMContentLoaded', _ => {
 });
 
 var recording = false;
+var pending = false;
 var status = -1;
 var activeWell = '';
 var startTime = Date.now();
 
 // Take a well name String at some point
 function gotoWell(row, col) {
-    status = -1;
     console.log('Go! (' + row + ',' + col + ')'); 
     req = new Request('/command', {method: 'POST', body: row + ',' + col + ';0'});
-    fetch(req).finally();
+    fetch(req).then(() => {
+        pending = false;
+        console.log('Pending unset (' + status + ')');
+    });
 }
 
 function powerLED(val) {
     console.log('Power LED: ' + val);
     var well = nameToCoords(activeWell);
     req = new Request('/command', { method: 'POST', body: well.r + ',' + well.c + ';' + val});
-    fetch(req).finally();
+    fetch(req).then(() => {
+        pending = false;
+        console.log('Pending unset');
+    });
 }
 
 function resetData() {
@@ -50,7 +56,6 @@ function changeActive(well) {
 }
 
 function recordData() {
-    status = -1;
     if (recording) {
         recording = false;
         powerLED(0);
@@ -91,23 +96,26 @@ function updateReading() {
     var url = '/status';
     var dataDisplay = document.getElementById('data-display');
     var statusDisplay = document.getElementById('status-display');
-    fetch(url).then(response => {
-        response.text().then(txt => {
-            status = Number(txt.split(';')[0]);
-            var sensor = txt.split(';')[1];
-            dataDisplay.textContent = sensor;
-            statusDisplay.textContent = translateStatus(status);
-            if (recording) {
-                var data = JSON.parse(localStorage.getItem(activeWell));
-                // console.log(data);
-                data.push({
-                    time: (Date.now() - startTime) / 1000,
-                    val: Number(sensor)
-                });
-                localStorage.setItem(activeWell, JSON.stringify(data));
-            }
-        })
-    });
+    if (!pending) {
+        fetch(url).then(response => {
+            response.text().then(txt => {
+                status = (pending) ? status : Number(txt.split(';')[0]);
+                console.log('Got status: ' + status);
+                var sensor = txt.split(';')[1];
+                dataDisplay.textContent = sensor;
+                statusDisplay.textContent = translateStatus(status);
+                if (recording) {
+                    var data = JSON.parse(localStorage.getItem(activeWell));
+                    // console.log(data);
+                    data.push({
+                        time: (Date.now() - startTime) / 1000,
+                        val: Number(sensor)
+                    });
+                    localStorage.setItem(activeWell, JSON.stringify(data));
+                }
+            })
+        });
+    }
     window.setTimeout(updateReading, 200);
 }
 
@@ -188,6 +196,8 @@ function readSelected() {
 
 function readWells(wells) {
     if (status == 1 && wells.length > 0) {
+        status = -1;
+        pending = true;
         console.log('Was ready, beginning now!');
         // console.log(wells);
         var well = wells.shift();
@@ -195,23 +205,24 @@ function readWells(wells) {
         if (activeWell == well.id) {
             console.log('Target well was matched');
             recordData();
-            status = -1;
-            window.setTimeout(recordData, 3000);
-            window.setTimeout(setActiveWellColor, 4000);
-            window.setTimeout(readWells, 5000, wells);
+            window.setTimeout(() => {
+                console.log("Launching from 3000ms delay!");
+                recordData();
+                setActiveWellColor();
+                readWells(wells);
+            }, 3000);
         } else {
             console.log('We are not at the right well yet...');
             var {r, c} = nameToCoords(well.id);
             changeActive(well.id);
-            status = -1;
             gotoWell(r,c);
             // console.log('nearly there');
             wells.unshift(well)
-            window.setTimeout(readWells, 1000, wells);
+            window.setTimeout(readWells, 1, wells);
         }
     } else if (wells.length > 0) {
         window.setTimeout(readWells, 1, wells);
-        console.log('Status is: ' + status);
+        console.log('Status is: ' + status + ' Pending: ' + pending);
     }
 }
 
@@ -229,15 +240,15 @@ function setActiveWellColor() {
     // console.log('Setting color');
     var well = document.getElementById(activeWell);
     var wellData = JSON.parse(localStorage.getItem(activeWell));
-    console.log(wellData);
+    // console.log(wellData);
     if (wellData.length > 0) {
         // console.log("Send help");
         var rec = wellData.pop()
         var od = sensorToOD(rec.val);
         var odLab = document.createTextNode(od);
         //well.appendChild(odLab);
-        console.log(well);
-        console.log(od);
+        // console.log(well);
+        // console.log(od);
         well.style.backgroundColor = 'hsl(' + ODToHue(od) + ', 50%, 50%)';
     }
 }

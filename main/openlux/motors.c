@@ -18,9 +18,9 @@ void home_motors() {
   set_status(HOMING);
   ESP_LOGI(TAG, "Device is homing...");
   ESP_LOGI(TAG, "Row");
-  drive_motors(LOWER_MOTORS, -4000, STEP_PERIOD);
+  drive_motors(LOWER_MOTORS, -4000, 2);
   ESP_LOGI(TAG, "Column");
-  drive_motors(UPPER_MOTORS, -6000, STEP_PERIOD);
+  drive_motors(UPPER_MOTORS, -6000, 2);
   drive_motors(LOWER_MOTORS, R_OFFSET, STEP_PERIOD);
   drive_motors(UPPER_MOTORS, C_OFFSET, STEP_PERIOD);
   shift_byte(0x00);
