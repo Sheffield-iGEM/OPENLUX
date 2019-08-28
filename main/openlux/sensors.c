@@ -35,7 +35,12 @@ int get_sensor_value(void) {
 void set_led(int status) {
   gpio_set_level(LED, status);
   ESP_LOGI(TAG, "LED set to %d", status);
-  (status) ? set_status(READING) : revert_status();
+  if (status && get_status() != READING) {
+    set_status(READING);
+  }
+  if (!status && get_status() == READING) {
+    revert_status();
+  }
 }
   
 static void poll_avg(void* args) {

@@ -203,6 +203,7 @@ function readWells(wells) {
             console.log('else');
             var {r, c} = nameToCoords(well.id);
             changeActive(well.id);
+            status = -1;
             gotoWell(r,c);
             console.log('nearly there');
             wells.unshift(well)
@@ -219,8 +220,8 @@ function sensorToOD(val) {
 }
 
 function ODToHue(val) {
-    var norm = val / 2.0;
-    var hue = norm * 240;
+    var norm = val / 1.75;
+    var hue = 240 - norm * 240;
     return hue;
 }
     
@@ -232,7 +233,11 @@ function setActiveWellColor() {
     if (wellData.length > 0) {
         console.log("Send help");
         var rec = wellData.pop()
+        var od = sensorToOD(rec.val);
+        var odLab = document.createTextNode(od);
+        //well.appendChild(odLab);
         console.log(well);
-        well.style.backgroundColor = 'hsl(' + ODToHue(rec.val) +', 100%, 50%)';
+        console.log(od);
+        well.style.backgroundColor = 'hsl(' + ODToHue(od) + ', 50%, 50%)';
     }
 }

@@ -35,20 +35,18 @@ void goto_loop(void* args) {
   while (true) {
     int r_err = R_TAR - R_POS;
     int c_err = C_TAR - C_POS;
-    if (r_err) {
+    if (r_err || c_err) {
+      set_status(MOVING);
       drive_motors(LOWER_MOTORS, r_err, STEP_PERIOD);
-      set_status(MOVING);
-      R_POS += r_err;
-    } else if (c_err) {
       drive_motors(UPPER_MOTORS, c_err, STEP_PERIOD);
-      set_status(MOVING);
+      R_POS += r_err;
       C_POS += c_err;
     } else if (get_status() == MOVING) {
       ESP_LOGI(TAG, "Done moving!");
       revert_status();
       shift_byte(0x00);
     }
-    vTaskDelay(5); // Find a meaningful number to put here
+    vTaskDelay(1000); // Find a meaningful number to put here
   }
 }
 
