@@ -137,7 +137,7 @@ p {
 	justify-self:start;
 	align-self:center;
 	grid-area: 2 / 3 / span 1/ span 1;
-	background-image: linear-gradient(red,orange,yellow,green,blue,indigo,violet); 
+	background-image: linear-gradient(red,orange,yellow,green,blue); 
 }
 
 

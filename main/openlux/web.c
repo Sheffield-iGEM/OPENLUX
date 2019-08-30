@@ -44,8 +44,8 @@ httpd_uri_t static_get_uri = {
 // latest available sensor reading and device status. It takes a pointer to the
 // request (so that it can respond to it) and returns ESP_OK if all goes well.
 static esp_err_t status_get(httpd_req_t* req) {
-  // 4 (sensor) + 1 (;) + 1 (status) + 1 (null)
-  char msg[7];
+  // 10 (32 bit sync key) + 4 (sensor) + 1 (;) + 1 (status) + 1 (null)
+  char msg[17];
   sprintf(msg, "%d;%d;%d", SYNC_KEY, get_status(), get_sensor_value());
   // Our text isn't HTML, so just set the response type to text/plain
   die_politely(httpd_resp_set_type(req, "text/plain"), "Failed to set response type");
@@ -56,19 +56,22 @@ static esp_err_t status_get(httpd_req_t* req) {
 }
 
 static esp_err_t command_post(httpd_req_t* req) {
+  SYNC_KEY++;
   char data[req->content_len + 1];
   httpd_req_recv(req, data, req->content_len);
   //data[sizeof(data) - 1] = '\0';
-  int sync = atoi(strtok(data, ";"));
-  char *coord = strtok(NULL, ";");
-  int led = atoi(strtok(NULL, ";"));
-  int row = atoi(strtok(coord, ","));
-  int col = atoi(strtok(NULL, ","));
-  goto_coord(row,col);
-  set_led(led);
-  httpd_resp_send(req, "", 0);
-  ESP_LOGI(TAG, "New sync key is: %d, and the status is: %d", sync, get_status());
-  SYNC_KEY = sync;
+  if (SYNC_KEY == atoi(strtok(data, ";"))) {
+    char *coord = strtok(NULL, ";");
+    int led = atoi(strtok(NULL, ";"));
+    int row = atoi(strtok(coord, ","));
+    int col  = atoi(strtok(NULL, ","));
+    goto_coord(row,col);
+    set_led(led);
+    httpd_resp_send(req, "", 0);
+    ESP_LOGI(TAG, "New sync key is: %d, and the status is: %d", SYNC_KEY, get_status());
+  } else {
+    httpd_resp_send_500(req);
+  }
   return ESP_OK;
 }
 

@@ -5,9 +5,9 @@ static const gpio_num_t CLK = GPIO_NUM_21;
 static const gpio_num_t LATCH = GPIO_NUM_19;
 
 static const int STEP_PERIOD = 3;
-static const int WELL_SPACING = 460;
-static const int R_OFFSET = 250;
-static const int C_OFFSET = 230;
+static const int WELL_SPACING = 464;
+static const int R_OFFSET = 252;
+static const int C_OFFSET = 232;
 
 static int R_TAR = 0;
 static int C_TAR = 0;
@@ -26,6 +26,8 @@ void home_motors() {
   shift_byte(0x00);
   ESP_LOGI(TAG, "Homed!");
   revert_status();
+  R_TAR = 0;
+  C_TAR = 0;
   R_POS = 0;
   C_POS = 0;
 }
@@ -35,7 +37,9 @@ void goto_loop(void* args) {
   while (true) {
     int r_err = R_TAR - R_POS;
     int c_err = C_TAR - C_POS;
-    if (r_err || c_err) {
+    if (R_TAR < 0 || C_TAR < 0) {
+      home_motors();
+    } else if (r_err || c_err) {
       set_status(MOVING);
       drive_motors(LOWER_MOTORS, r_err, STEP_PERIOD);
       drive_motors(UPPER_MOTORS, c_err, STEP_PERIOD);

@@ -18,7 +18,8 @@ long ways behind. Things will be cleaned up and commented in September.
 * Reduce as many hard-coded values as possible
 * Add lots more logging
 * Only allow certain actions when the machine is in a certain state
-* Allow status to be reverted to previous status
-* Combine all requests to the device into one (sensors & status)
 * Fixed number of readings rather than time per well
 * Store synckey and active well in the localstorage
+* Dynamic colour range?
+* Efficient movement
+* Fix missing steps

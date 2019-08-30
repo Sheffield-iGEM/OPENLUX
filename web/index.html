@@ -8,42 +8,32 @@
     <title>OpenLUX Console</title>
   </head>
   <body>
-	  <div id="wrapper-layout">
-		<div id="header-section">
-			<img src="svg/bulb+text.svg">
-		</div>
-		<div id="body-section">
-			
-				
-				<div id="button-ui">
-					<button type="button" onclick="resetData()">CLEAR WELLS</button>
-					<button type="button" onclick="resetWells()">CLEAR DATA</button>
-					<button type="button" onclick="recordData()">SCAN WELLS </button>
-					<button type="button" onclick="downloadData()">DOWNLOAD DATA</button>
-					<button type="button" onclick="homeDevice()">HOME DEVICE</button>
-				</div>
-				
-				
-				<div id="plate">
-					<div id="col-labs"></div>
-					<div id="row-labs"></div>
-					<div id="wells"> </div>
-				</div>
-				
-				<div id="heat-map">
-					
-				</div>
-				
-				<div id="output-text">
-					<p class="display-text" id="status-display">NO STATUS</p>
-					
-					<p class="display-text" id="data-display">NO DATA</p>
-					
-					<p class="display-text" id="time-elapsed">TIME ELAPSED</p>
-				</div>
-		</div> 
-		<div id="footer-section">
-		</div>
-	  </div>
+    <div id="wrapper-layout">
+      <div id="header-section">
+	<img src="svg/bulb+text.svg">
+      </div>
+      <div id="body-section">
+	<div id="button-ui">
+	  <button type="button" onclick="resetWells()">CLEAR WELLS</button>
+	  <button type="button" onclick="resetData()">CLEAR DATA</button>
+	  <button type="button" onclick="readSelected()">SCAN WELLS </button>
+	  <button type="button" onclick="downloadData()">DOWNLOAD DATA</button>
+	  <button type="button" onclick="homeDevice()">HOME DEVICE</button>
+	</div>
+	<div id="plate">
+	  <div id="col-labs"></div>
+	  <div id="row-labs"></div>
+	  <div id="wells"> </div>
+	</div>
+	<div id="heat-map"></div>
+	<div id="output-text">
+	  <p class="display-text" id="status-display">NO STATUS</p>
+	  <p class="display-text" id="data-display">NO DATA</p>
+	  <p class="display-text" id="time-elapsed">TIME ELAPSED</p>
+	</div>
+      </div>
+      <div id="footer-section">
+      </div>
+    </div>
   </body>
 </html>
