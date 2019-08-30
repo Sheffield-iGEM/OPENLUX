@@ -42,7 +42,7 @@ void app_main(void) {
   
   // !!! DIRTY CHUNK !!!
   setup_motor_driver();
-  home_motors();
+  // home_motors();
   start_goto_loop();
   ESP_LOGI(TAG, "Initialised!");
   set_status(READY);

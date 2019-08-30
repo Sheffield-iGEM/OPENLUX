@@ -1,9 +1,12 @@
 // Wait for the page to load before requesting sensor values
+var rowCount = 8;
+var colCount = 12;
+
 document.addEventListener('DOMContentLoaded', _ => {
     updateReading();
     updateTime();
     resetData();
-    buildPlate(8, 12);
+    buildPlate(rowCount, colCount);
 });
 
 var recordQueue = -1;
@@ -126,7 +129,7 @@ function updateReading() {
                 if (recordQueue > 0) {
                     recordQueue--;
                 }
-                console.log(recordQueue);
+                // console.log(recordQueue);
             }
         });
     });
@@ -216,13 +219,62 @@ function readSelected() {
     var selectedWells = document.querySelectorAll('.well.selected');
     // console.log('Reading wells: ');
     // console.log([...selectedWells]);
-    readWells([...selectedWells]);
+    //console.log(sortDistance([...selectedWells]));
+    readWells(sortDistance([...selectedWells]));
+}
+
+function sortDistance(wells) {
+    if (wells.length>1)
+    {
+        var sortedWells = [];
+        while(wells.length > 0) {
+            var currentWell = wells.shift();
+            sortedWells.push(currentWell);
+            wells.sort(compareDistance(currentWell));
+        }
+        return sortedWells;
+    }
+    else
+    {
+        return wells;
+    }
+    
+
+}
+
+function getDistance(a,b) {
+    var {r:arow,c:acol} = a;
+    var {r:brow,c:bcol} = b;
+    var distance = Math.sqrt((brow-arow)**2+(bcol-acol)**2);
+    return distance;
+}
+
+function compareDistance(r) {
+    var rc = nameToCoords(r.id);
+    return ((a,b) => {
+        var acoor =nameToCoords(a.id);
+        var bcoor =nameToCoords(b.id);
+
+        var adist = getDistance(rc,acoor);
+        var bdist = getDistance(rc,bcoor);
+        var diff = adist - bdist;
+        if (diff == 0) {
+            return(nthWell(acoor)-nthWell(bcoor));
+        }
+        else
+        {
+            return(diff);
+        }
+    });
+}
+function nthWell(coor){
+     return ((coor.r-1)*colCount+coor.c);
 }
 
 function readWells(wells) {
-    if (status == 1 && wells.length > 0) {
+    if ((status == 1 && wells.length > 0) || shortCircuit) {
         status = -1;
-        pending = true;
+        
         console.log('Was ready, beginning now!');
         // console.log(wells);
         var well = wells.shift();
@@ -236,17 +288,21 @@ function readWells(wells) {
             var {r, c} = nameToCoords(well.id);
             changeActive(well.id);
             gotoWell(r,c);
+            this.shortCircuit = false;
             // console.log('nearly there');
-            wells.unshift(well)
+            wells.unshift(well);
         }
     } else if (wells.length > 0 || recordQueue >= 0) {
         console.log('Status is: ' + status);
         if (recordQueue == 0) {
             powerLED(0);
+            console.log("HERE");
+            //this.shortCircuit = true; // I hate this...
             setActiveWellColor();
             recordQueue--;
         }
     } else {
+        powerLED(0);
         return;
     }
     window.setTimeout(readWells, 1, wells);

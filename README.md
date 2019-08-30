@@ -22,4 +22,5 @@ long ways behind. Things will be cleaned up and commented in September.
 * Store synckey and active well in the localstorage
 * Dynamic colour range?
 * Efficient movement
-* Fix missing steps
+* Sync ID Reset (On Page Reload)
+* Reduce JS console output
