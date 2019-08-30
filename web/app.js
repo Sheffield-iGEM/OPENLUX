@@ -319,7 +319,9 @@ function ODToHue(val) {
 }
 
 function sensorToHue(val) {
-    var num = val / 4095;
+    var low = 1900;
+    var high = 2500;
+    var num = (val - low) / (high - low);
     var hue = Math.round(num * 250);
     return (Math.max(0, Math.min(250, hue)));
 }

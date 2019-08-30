@@ -24,3 +24,4 @@ long ways behind. Things will be cleaned up and commented in September.
 * Efficient movement
 * Sync ID Reset (On Page Reload)
 * Reduce JS console output
+* CSS fix bouncy status bar
