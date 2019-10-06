@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded', _ => {
     updateReading();
     updateTime();
     resetData();
+    toggleButtonColor();
     buildPlate(rowCount, colCount);
 });
 
@@ -341,4 +342,20 @@ function setActiveWellColor() {
         // console.log(od);
         well.style.backgroundColor = 'hsl(' + sensorToHue(rec.val) + ', 100%, 50%)';
     }
+}
+
+function toggleButtonColor(){
+    var button = document.getElementById("startbtn");
+    button.addEventListener('click', function() {
+    if (button.getAttribute("data-text-swap") == button.innerHTML) {
+        button.innerHTML = button.getAttribute("data-text-original");
+        button.style.backgroundColor = "rgb(0,0,0)"
+    } else {
+        button.setAttribute("data-text-original", button.innerHTML);
+        button.innerHTML = button.getAttribute("data-text-swap");
+        button.style.backgroundColor = "rgb(255,0,0)";
+        button.style.borderColor = "rgb(0,0,0)";
+        //button.style.border= "solid";
+    }
+    }, false);
 }

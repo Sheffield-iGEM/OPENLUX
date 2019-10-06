@@ -8,26 +8,27 @@
 
 // Declare the functions we'll be defining later
 // Event handlers:
-static void on_disconnect(void*, esp_event_base_t, int32_t, void*);
+static void on_disconnect(void *, esp_event_base_t, int32_t, void *);
 // System initialisation:
 static void mount_webdata();
 static void wifi_start(char[], char[]);
 
 // This is the entry-point to our program
-void app_main(void) {
+void app_main(void)
+{
   // Initialise the default event loop. The WiFi subsystem (and other built-in
   // APIs) post events to this event loop. This allows user-defined functions to
   // be run in response to system events
   die_politely(esp_event_loop_create_default(), "Failed to set up the default event loop");
-  
+
   // Register some event handlers to the default loop
   die_politely(esp_event_handler_register(WIFI_EVENT, WIFI_EVENT_STA_DISCONNECTED,
-                                     &on_disconnect, NULL),
-          "Failed to register disconnect handler");
+                                          &on_disconnect, NULL),
+               "Failed to register disconnect handler");
 
   // Mount the SPIFFS filesystem so that web resources are accessible
   mount_webdata();
-  
+
   // Connect to WiFi. Currently the network SSID and password are set in an
   // external configuration program, but could be set here directly.
   wifi_start(CONFIG_ESP_WIFI_SSID, CONFIG_ESP_WIFI_PASSWORD);
@@ -39,7 +40,7 @@ void app_main(void) {
   // the first analogue channel (ADC1_CHANNEL_0), the range of the channel is
   // set to 0-1.1V (ADC_ATTEN_DB_0), and the sampling period is 200ms.
   start_sensor_polling(ADC1_CHANNEL_0, ADC_ATTEN_DB_0, 200);
-  
+
   // !!! DIRTY CHUNK !!!
   setup_motor_driver();
   // home_motors();
@@ -58,8 +59,9 @@ void app_main(void) {
 // 3) event_id is the specific event that occurred
 // 4) event_data is another generic pointer that holds some additional
 //    information about the event
-static void on_disconnect(void* arg, esp_event_base_t event_base,
-                          int32_t event_id, void* event_data) {
+static void on_disconnect(void *arg, esp_event_base_t event_base,
+                          int32_t event_id, void *event_data)
+{
   // Not doing anything fancy here, if we are disconnected, warn the user and
   // unconditionally attempt to reconnect.
   ESP_LOGW(TAG, "WiFi is disconnected. Attempting to reconnect now...");
@@ -70,13 +72,14 @@ static void on_disconnect(void* arg, esp_event_base_t event_base,
 // This function does not return any value
 // It takes a string that determines the mount location of the webdata partition
 // and attempt to mount SPIFFS there.
-static void mount_webdata() {
+static void mount_webdata()
+{
   // Here is the Virtual FileSystem configuration
   esp_vfs_spiffs_conf_t config = {
-    .base_path = WEB, // This is the location that webdata is mounted
-    .partition_label = "webdata", // This tells VFS we are mounting webdata
-    .max_files = 8, // Only allow 8 files to be open simultaneously
-    .format_if_mount_failed = false // Don't format the partition if mounting fails
+      .base_path = WEB,               // This is the location that webdata is mounted
+      .partition_label = "webdata",   // This tells VFS we are mounting webdata
+      .max_files = 8,                 // Only allow 8 files to be open simultaneously
+      .format_if_mount_failed = false // Don't format the partition if mounting fails
   };
 
   // Attempt to mount the partition and inform the user of any failure
@@ -85,7 +88,8 @@ static void mount_webdata() {
 
 // This function does not return a value
 // Connects to the WiFi network described by the SSID and password provided
-static void wifi_start(char ssid[], char pass[]) {
+static void wifi_start(char ssid[], char pass[])
+{
   // This initialises the Non-Volitile Storage partition
   // This API stores key-value pairs on the flash and is required by esp_wifi_init()
   nvs_flash_init();
@@ -96,19 +100,39 @@ static void wifi_start(char ssid[], char pass[]) {
   wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
   // Attempt to start the WiFi Driver, signalling error on failure
   die_politely(esp_wifi_init(&cfg), "The WiFi driver failed to start");
-  // Attempt to set the WiFi mode to Station mode (ESP32 is a client)
-  die_politely(esp_wifi_set_mode(WIFI_MODE_STA), "Failed to set the ESP32 as a WiFi client");
+
+  char *ap_ssid = "OpenLUX";
+  char *ap_password = "neatneat";
+
+  wifi_config_t ap_config;
+  // memset(&ap_config, 0, sizeof(wifi_config_t));
+  // strncpy(ap_config.ap.ssid,ap_ssid,strlen(ap_ssid));
+  // strncpy(ap_config.ap.ssid,ap_password,strlen(ap_password));
+  memcpy(ap_config.ap.ssid,ap_password,strlen(ap_password));
+  memcpy(ap_config.ap.ssid,ap_ssid,strlen(ap_ssid));
+
+  
+  ap_config.ap.authmode = WIFI_AUTH_OPEN;
+  ap_config.ap.ssid_len = strlen(ap_ssid);
+  ap_config.ap.max_connection = 5; 
+  //ap_config.ap.channel = AP_CHANNEL;
+
 
   // Initialise a struct to hold the station (sta) config
   // FIXME: Do this with struct ...? Get rid of the literal.
-  wifi_config_t config = { .sta = { } };
+  wifi_config_t sta_config = { .sta = { } };
   // Set the network name (SSID)
-  memcpy(config.sta.ssid, ssid, strlen(ssid));
+  memcpy(sta_config.sta.ssid, ssid, strlen(ssid));
   // Set the network password
-  memcpy(config.sta.password, pass, strlen(pass));
+  memcpy(sta_config.sta.password, pass, strlen(pass));
+
   
+
+  // Attempt to set the WiFi mode to Access point and Station mode (ESP32 is a client)
+  die_politely(esp_wifi_set_mode(WIFI_MODE_APSTA), "Failed to set the ESP32 as a WiFi client and access point");
   // Set the WiFi configuration as a station (WIFI_IF_STA)
-  die_politely(esp_wifi_set_config(WIFI_IF_STA, &config), "Invalid WiFi Configuration");
+  die_politely(esp_wifi_set_config(WIFI_IF_AP, &ap_config), "Invalid WiFi Configuration - ap");
+  die_politely(esp_wifi_set_config(WIFI_IF_STA, &sta_config), "Invalid WiFi Configuration - sta");
   // Start WiFi
   die_politely(esp_wifi_start(), "Failed to start the WiFi subsystem");
   // Attempt to connect to the previously specified SSID
