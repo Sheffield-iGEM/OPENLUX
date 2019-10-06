@@ -4,7 +4,7 @@ var colCount = 12;
 
 document.addEventListener('DOMContentLoaded', _ => {
     updateReading();
-    updateTime();
+    // updateTime();
     resetData();
     toggleButtonColor();
     buildPlate(rowCount, colCount);
@@ -15,6 +15,7 @@ var status = -1;
 var activeWell = '';
 var startTime = Date.now();
 var syncKey = 0;
+var programName = null;
 
 const samPer = 500;
 
@@ -113,7 +114,7 @@ function exportCSV() {
 
 function updateReading() {
     var url = '/status';
-    var dataDisplay = document.getElementById('data-display');
+    // var dataDisplay = document.getElementById('data-display');
     var statusDisplay = document.getElementById('status-display');
     fetch(url).then(response => {
         response.text().then(txt => {
@@ -123,7 +124,7 @@ function updateReading() {
                 status = Number(txt.split(';')[1]);
                 // console.log('Got status: ' + status);
                 var sensor = txt.split(';')[2];
-                dataDisplay.textContent = sensor;
+                // dataDisplay.textContent = sensor;
                 if (recordQueue == 1) {
                     saveRecording(sensor);
                 }
@@ -134,7 +135,7 @@ function updateReading() {
             }
         });
     });
-    statusDisplay.textContent = translateStatus(status);
+    statusDisplay.textContent = translateStatus(status) + ((programName != null) ? (" (" + programName + ")") : "");
     window.setTimeout(updateReading, samPer);
 }
 
@@ -224,7 +225,9 @@ function readSelected() {
     readWells(sortDistance([...selectedWells]));
 }
 
-function sortDistance(wells) {
+function sortDistance(wells)
+{
+    console.log(wells)
     if (wells.length>1)
     {
         var sortedWells = [];
@@ -241,6 +244,20 @@ function sortDistance(wells) {
     }
     
 
+}
+
+function runProgram(prog) {
+    if (prog.samples > 0 && status == 1) {
+        programName = prog.name;
+        var wells = prog.wells.map((id) => ({id: id}));
+        console.log(wells);
+        readWells(wells);
+        prog.samples--;
+        setTimeout(runProgram, prog.samplingInterval * 1000 * 60, prog);
+    } else if (prog.samples > 0) {
+        console.log("New read requested, but old has yet to finish!");
+        setTimeout(runProgram, 1, prog);
+    }
 }
 
 function getDistance(a,b) {
