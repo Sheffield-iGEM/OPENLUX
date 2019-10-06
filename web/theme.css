@@ -16,7 +16,7 @@ body {
 }
 
 button {
-    background-color: #4CAF50; /* Green */
+    background-color: rgb(0, 0, 0); 
     border: none;
     color: white;
     /*! padding: 15px 32px; */
@@ -24,12 +24,44 @@ button {
     text-decoration: none;
     display: inline-block;
     font-size: 16px;
-    border-radius: 5px;
+    /*border-radius: 5px;*/
 	padding-bottom:1rem;
 	padding-top:1rem;
 
 }
-button:hover {background-color: #3e8e41}
+
+.dropbtn{
+    background-color: rgb(0, 0, 0);
+    color: white;
+    padding:16px;
+    border: none;
+    cursor: pointer;
+}
+.dropdown{
+    position: relative;
+    display: inline-block;
+}
+.dropdown-content{
+    display: none;
+    position: absolute;
+    background-color: #000000;
+    min-width: 160px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+}
+.dropdown-content a{
+    color:white;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+}
+.dropdown-content a:hover{background-color: #3f3f3f}
+.dropdown:hover .dropdown-content{
+    display:block;
+}
+.dropdown:hover .dropbtn{
+    background-color: #000000;
+}
 
 img {
 	
@@ -78,7 +110,7 @@ p {
 	
 	display:grid;
 	grid-template-columns: 1fr auto 1fr;
-    grid-template-rows: 1fr 6fr 1fr;
+    grid-template-rows: 1fr 1fr 6fr 1fr;
 	
 }
 #footer-section{
@@ -105,7 +137,7 @@ p {
 	
 	
     display:grid;
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(3, 1fr);
     grid-template-rows: 1fr;
     grid-gap: 1rem;
 	padding-bottom:1rem;
@@ -131,13 +163,13 @@ p {
 
 
 #heat-map{
-	width:1rem;
-	height:80%;
+	width:80%;
+	height:1rem;
 	margin-left:2rem;
-	justify-self:start;
+	justify-self:center;
 	align-self:center;
-	grid-area: 2 / 3 / span 1/ span 1;
-	background-image: linear-gradient(red,orange,yellow,green,blue); 
+	grid-area: 4 / 2 / span 1/ span 1;
+	background-image: linear-gradient(to right,red,orange,yellow,green,blue); 
 }
 
 
@@ -145,7 +177,7 @@ p {
 	
 	justify-self:center;
 	align-self:center;
-	grid-area: 2 / 2 / span 1/ span 1;
+	grid-area: 3 / 2 / span 1/ span 1;
 	
     display: grid;
 	width:70vh;
@@ -193,7 +225,7 @@ p {
 }
 
 #output-text{
-	grid-area: 3 / 1 / span 1/ span 3;
+	grid-area: 2 / 1 / span 1/ span 3;
 	
 	justify-self:center;
 	align-self:center;
