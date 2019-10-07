@@ -66,7 +66,8 @@ button {
 img {	
     margin-left: auto;
     margin-right: auto;
-    height:80%             
+    height:80%;
+    max-width: 100%;
 }
 
 h1 {
