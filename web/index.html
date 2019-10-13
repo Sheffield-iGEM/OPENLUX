@@ -9,14 +9,14 @@
     <title>OpenLUX Console</title>
   </head>
 
-  <body>
+  <body ondragstart="return false;" ondrop="return false;">
     <div id="wrapper-layout">
       <div id="header-section">
 	<img src="svg/bulb+text.svg">
       </div>
       <div id="body-section">
         <div id="button-ui">
-	  <button data-text-swap="STOP" id ="startbtn"type="button" onclick="readSelected()">START </button>
+	  <button id="start" type="button" onclick="startStop()">START</button>
 	  <button type="button" onclick="downloadData()">DOWNLOAD DATA</button>
           <div class="dropdown">
 	    <button class="dropbtn">▼</button>
@@ -24,6 +24,7 @@
 	      <a onclick="resetWells()">Clear Selection</a>
 	      <a onclick="resetData()">Clear Data</a>
 	      <a onclick="homeDevice()">Home Device</a>
+              <a onclick="programMode()">Programs</a>
 	    </div>
 	  </div>
         </div>
@@ -33,6 +34,10 @@
 	  <div id="wells"> </div>
         </div>
         <!-- <div id="heat-map"></div> -->
+        <div id="program-panel">
+          <p>Time Points:</p>
+          <p>Intervals:</p>
+        </div>
 	<p class="display-text" id="status-display">NO STATUS</p>
       </div>
       <div id="footer-section">

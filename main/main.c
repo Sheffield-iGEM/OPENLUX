@@ -6,6 +6,9 @@
 #include <nvs_flash.h>
 #include <esp_wifi.h>
 
+#define AP_SSID = "OpenLUX";
+#define AP_PASS = "neatneat";
+
 // Declare the functions we'll be defining later
 // Event handlers:
 static void on_disconnect(void *, esp_event_base_t, int32_t, void *);
@@ -101,23 +104,29 @@ static void wifi_start(char ssid[], char pass[])
   // Attempt to start the WiFi Driver, signalling error on failure
   die_politely(esp_wifi_init(&cfg), "The WiFi driver failed to start");
 
-  char *ap_ssid = "OpenLUX";
-  char *ap_password = "neatneat";
-
-  wifi_config_t ap_config;
-  // memset(&ap_config, 0, sizeof(wifi_config_t));
-  // strncpy(ap_config.ap.ssid,ap_ssid,strlen(ap_ssid));
-  // strncpy(ap_config.ap.ssid,ap_password,strlen(ap_password));
-  memcpy(ap_config.ap.ssid,ap_password,strlen(ap_password));
-  memcpy(ap_config.ap.ssid,ap_ssid,strlen(ap_ssid));
+  /* wifi_config_t ap_config; */
+  /* // memset(&ap_config, 0, sizeof(wifi_config_t)); */
+  /* // strncpy(ap_config.ap.ssid,ap_ssid,strlen(ap_ssid)); */
+  /* // strncpy(ap_config.ap.ssid,ap_password,strlen(ap_password)); */
+  /* memcpy(ap_config.ap.ssid,ap_password,strlen(ap_password)); */
+  /* memcpy(ap_config.ap.ssid,ap_ssid,strlen(ap_ssid)); */
 
   
-  ap_config.ap.authmode = WIFI_AUTH_OPEN;
-  ap_config.ap.ssid_len = strlen(ap_ssid);
-  ap_config.ap.max_connection = 5; 
-  //ap_config.ap.channel = AP_CHANNEL;
+  /* ap_config.ap.authmode = WIFI_AUTH_OPEN; */
+  /* ap_config.ap.ssid_len = strlen(ap_ssid); */
+  /* ap_config.ap.max_connection = 5;  */
+  /* //ap_config.ap.channel = AP_CHANNEL; */
 
-
+  wifi_config_t ap_config = {
+      .ap = {
+             .ssid = AP_SSID,
+             .ssid_len = strlen(AP_SSID),
+             .password = AP_PASS,
+             .max_connection = 5,
+             .authmode = WIFI_AUTH_WPA_WPA2_PSK
+      },
+  };
+                                    
   // Initialise a struct to hold the station (sta) config
   // FIXME: Do this with struct ...? Get rid of the literal.
   wifi_config_t sta_config = { .sta = { } };

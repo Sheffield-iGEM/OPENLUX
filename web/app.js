@@ -6,8 +6,22 @@ document.addEventListener('DOMContentLoaded', _ => {
     updateReading();
     // updateTime();
     resetData();
-    toggleButtonColor();
     buildPlate(rowCount, colCount);
+});
+
+var mousedown = 0;
+var dragmode = 0;
+var startingWell = null;
+var preselectedWells = [];
+var running = false;
+var programRunning = false;
+document.addEventListener('mousedown', _ => {
+    mousedown = 1
+});
+
+document.addEventListener('mouseup', _ => {
+    mousedown = 0;
+    dragmode = 0;
 });
 
 var recordQueue = -1;
@@ -15,7 +29,6 @@ var status = -1;
 var activeWell = '';
 var startTime = Date.now();
 var syncKey = 0;
-var programName = null;
 
 const samPer = 500;
 
@@ -135,7 +148,7 @@ function updateReading() {
             }
         });
     });
-    statusDisplay.textContent = translateStatus(status) + ((programName != null) ? (" (" + programName + ")") : "");
+    statusDisplay.textContent = translateStatus(status);
     window.setTimeout(updateReading, samPer);
 }
 
@@ -206,13 +219,36 @@ function coordToName(r,c) {
 } 
 
 function wellClickListener(well, r, c, name) {
-    well.addEventListener('click', () => {
-        // changeActive(name);
-        // gotoWell(r,c);
+    well.addEventListener('mousedown', () => {
         if (well.classList.contains('selected')) {
             well.classList.remove('selected');
+            dragmode = -1;
         } else {
             well.classList.add('selected');
+            dragmode = 1;
+        }
+        startingWell = well.id;
+        preselectedWells = [...document.querySelectorAll('.well.selected')];
+    });
+    well.addEventListener('mouseover', () => {
+        if (mousedown) {
+            resetWells();
+            preselectedWells.forEach((well) => {
+                well.classList.add('selected');
+            });
+            var {r: cr, c: cc} = nameToCoords(well.id);
+            var {r: sr, c: sc} = nameToCoords(startingWell);
+            for (r = Math.min(cr, sr); r <= Math.max(cr, sr); r++) {
+                for (c = Math.min(cc, sc); c <= Math.max(cc, sc); c++) {
+                    var tmpWell = document.getElementById(coordToName(r,c));
+                    if (dragmode == 1) {
+                        tmpWell.classList.add('selected');
+                    }
+                    if (dragmode == -1) {
+                        tmpWell.classList.remove('selected');
+                    }
+                }
+            }
         }
     });
 }
@@ -247,16 +283,19 @@ function sortDistance(wells)
 }
 
 function runProgram(prog) {
-    if (prog.samples > 0 && status == 1) {
-        programName = prog.name;
+    if (prog.samples > 0 && status == 1 && running) {
+        programRunning = true;
         var wells = prog.wells.map((id) => ({id: id}));
         console.log(wells);
         readWells(wells);
         prog.samples--;
         setTimeout(runProgram, prog.samplingInterval * 1000 * 60, prog);
-    } else if (prog.samples > 0) {
+    } else if (prog.samples > 0 && running) {
         console.log("New read requested, but old has yet to finish!");
         setTimeout(runProgram, 1, prog);
+    } else {
+        programRunning = false;
+        startStop();
     }
 }
 
@@ -290,7 +329,7 @@ function nthWell(coor){
 }
 
 function readWells(wells) {
-    if ((status == 1 && wells.length > 0) || shortCircuit) {
+    if ((status == 1 && wells.length > 0 && running)) {
         status = -1;
         
         console.log('Was ready, beginning now!');
@@ -306,7 +345,6 @@ function readWells(wells) {
             var {r, c} = nameToCoords(well.id);
             changeActive(well.id);
             gotoWell(r,c);
-            this.shortCircuit = false;
             // console.log('nearly there');
             wells.unshift(well);
         }
@@ -315,12 +353,14 @@ function readWells(wells) {
         if (recordQueue == 0) {
             powerLED(0);
             console.log("HERE");
-            //this.shortCircuit = true; // I hate this...
             setActiveWellColor();
             recordQueue--;
         }
     } else {
         powerLED(0);
+        if (!programRunning) {
+            startStop();
+        }
         return;
     }
     window.setTimeout(readWells, 1, wells);
@@ -361,18 +401,15 @@ function setActiveWellColor() {
     }
 }
 
-function toggleButtonColor(){
-    var button = document.getElementById("startbtn");
-    button.addEventListener('click', function() {
-    if (button.getAttribute("data-text-swap") == button.innerHTML) {
-        button.innerHTML = button.getAttribute("data-text-original");
-        button.style.backgroundColor = "rgb(0,0,0)"
+function startStop() {
+    running != running;
+    var button = document.getElementById("start");
+    if (running) {
+        readSelected();
+        button.innerHTML = "STOP";
+        button.style.backgroundColor = "red";
     } else {
-        button.setAttribute("data-text-original", button.innerHTML);
-        button.innerHTML = button.getAttribute("data-text-swap");
-        button.style.backgroundColor = "rgb(255,0,0)";
-        button.style.borderColor = "rgb(0,0,0)";
-        //button.style.border= "solid";
-    }
-    }, false);
+        button.innerHTML = "START";
+        button.style.backgroundColor = "black";
+    } 
 }

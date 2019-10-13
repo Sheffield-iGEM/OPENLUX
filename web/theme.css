@@ -257,3 +257,7 @@ p {
     margin: 0;
     font-size: 1rem
 }
+
+#program-panel {
+    display: none;
+}
