@@ -107,7 +107,7 @@ function downloadData() {
     link.click();
 }
 
-function exportCSV() {
+function exportCSVTime() {
     var wells = JSON.parse(localStorage.getItem('Wells'));
     var data = wells.map((well) => JSON.parse(localStorage.getItem(well)));
     var capRow = (row) => row.slice(-row.length + 1) + '\n';
@@ -122,6 +122,34 @@ function exportCSV() {
             (obj == null) ? acc + ',,' : acc + ',' + obj.time + ',' + obj.val, '');
         csv += capRow(row);
     } while (rowData.some((x) => x != null));
+    return csv;
+}
+
+function exportCSV() {
+    var wells = JSON.parse(localStorage.getItem('Wells'));
+    console.log('Exporting wells: ' + wells);
+    var csv = '';
+    for (var r = 0; r <= rowCount; r++) {
+        var row = '';
+        for (var c = 0; c <= colCount; c++) {
+            if (c == 0 && r == 0) {
+                row += ',';
+            } else if (c == 0) {
+                row += String.fromCharCode(64 + r) + ',';
+            } else if (r == 0) {
+                row += c + ',';
+            } else {
+                var name = coordToName(r,c);
+                if (wells.includes(name)) {
+                    var obj = JSON.parse(localStorage.getItem(name));
+                    row += obj.pop().val + ',';
+                } else {
+                    row += ',';
+                }
+            }
+        }
+        csv += row.replace(/,$/g, '\n');
+    }
     return csv;
 }
 
