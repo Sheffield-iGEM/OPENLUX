@@ -6,8 +6,8 @@
 #include <nvs_flash.h>
 #include <esp_wifi.h>
 
-#define AP_SSID = "OpenLUX";
-#define AP_PASS = "neatneat";
+#define AP_SSID "OpenLUX"
+#define AP_PASS "neatneat"
 
 // Declare the functions we'll be defining later
 // Event handlers:
@@ -65,6 +65,8 @@ void app_main(void)
 static void on_disconnect(void *arg, esp_event_base_t event_base,
                           int32_t event_id, void *event_data)
 {
+  // Wait 10 seconds before attempting to reconnect
+  vTaskDelay(10000 / portTICK_PERIOD_MS);
   // Not doing anything fancy here, if we are disconnected, warn the user and
   // unconditionally attempt to reconnect.
   ESP_LOGW(TAG, "WiFi is disconnected. Attempting to reconnect now...");

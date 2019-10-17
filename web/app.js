@@ -333,7 +333,7 @@ function readWells(wells) {
         status = -1;
         
         console.log('Was ready, beginning now!');
-        // console.log(wells);
+        console.log('Have some wells, laddie:', wells);
         var well = wells.shift();
         console.log('Active well: ' + activeWell + ' Targeted well: ' + well.id);
         if (activeWell == well.id) {
@@ -402,7 +402,8 @@ function setActiveWellColor() {
 }
 
 function startStop() {
-    running != running;
+    running = !running;
+    console.log("Start/Stop: " + running);
     var button = document.getElementById("start");
     if (running) {
         readSelected();
