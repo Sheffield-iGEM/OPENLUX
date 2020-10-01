@@ -1,6 +1,6 @@
 # OpenLUX
 
-An open source, affordable microplate reader for everyone.
+An open source, affordable microplate reader for everyone and can be used easily.
 
 ## Documentation Note
 The demand for a rapid development pace means that documentation has fallen a
